@@ -407,6 +407,33 @@ function finalize(before: GameState, mid: GameState, p: Partial0, tasks: readonl
       leveledUp: levelAfter > levelBefore,
       missionCompleted,
       unlocked,
+      repeat: false,
+      at: now.toISOString(),
+    },
+  }
+}
+
+/**
+ * Re-conclusão de algo que já rendeu XP (Feito → Desfazer → Feito, ou passo desmarcado e marcado).
+ * Estado inalterado; recompensa com xp 0, sem combo, missão ou conquista — a UI ainda mostra "Feito!".
+ */
+export function repeatReward(state: GameState, kind: RewardKind, now: Date): GameResult {
+  const level = levelFromXp(state.xp).level
+  return {
+    state,
+    reward: {
+      kind,
+      xp: 0,
+      breakdown: [],
+      combo: 0,
+      comboMultiplier: 1,
+      streak: currentStreak(state.streak, dayKey(now)),
+      shieldUsed: false,
+      levelBefore: level,
+      levelAfter: level,
+      leveledUp: false,
+      unlocked: [],
+      repeat: true,
       at: now.toISOString(),
     },
   }

@@ -61,6 +61,51 @@ describe('useTasks', () => {
     expect(G().xp).toBe(xp)
   })
 
+  it('regressão (Sentinela): Feito → Desfazer em loop não farma XP nem combo', () => {
+    const t = T().add({ title: 'B' }, NOW)
+    const first = T().completeTask(t.id, NOW)!
+    expect(first.repeat).toBe(false)
+    const xpAfterFirst = G().xp
+    const statsAfterFirst = G().stats
+    for (let i = 1; i <= 5; i++) {
+      T().uncomplete(t.id)
+      const r = T().completeTask(t.id, new Date(NOW.getTime() + i * 60_000))!
+      expect(r).toMatchObject({ kind: 'task', xp: 0, repeat: true, combo: 0, leveledUp: false, unlocked: [] })
+      expect(r.missionCompleted).toBeUndefined()
+      expect(G().lastReward).toEqual(r) // a UI ainda recebe feedback
+    }
+    expect(G().xp).toBe(xpAfterFirst)
+    expect(G().combo.count).toBe(1)
+    expect(G().stats).toEqual(statsAfterFirst)
+    expect(T().tasks[0].doneAt).toBeDefined()
+    expect(T().tasks[0].rewardedAt).toBe(NOW.toISOString())
+  })
+
+  it('regressão (Sentinela): desmarcar e marcar o passo de novo não paga 2 XP de novo', () => {
+    const t = T().add({ title: 'x', steps: ['a'] }, NOW)
+    const stepId = T().tasks[0].steps[0].id
+    const first = T().toggleStep(t.id, stepId, NOW)!
+    expect(first.xp).toBeGreaterThanOrEqual(2)
+    const xp = G().xp
+    for (let i = 0; i < 5; i++) {
+      expect(T().toggleStep(t.id, stepId, NOW)).toBeUndefined() // desmarca
+      const r = T().completeStep(t.id, stepId, NOW)!
+      expect(r).toMatchObject({ kind: 'step', xp: 0, repeat: true })
+    }
+    expect(G().xp).toBe(xp)
+    expect(G().stats.stepsCompleted).toBe(1)
+  })
+
+  it('tarefas diferentes continuam pagando normalmente', () => {
+    const a = T().add({ title: 'a' }, NOW)
+    const b = T().add({ title: 'b' }, NOW)
+    T().complete(a.id, NOW)
+    const r = T().complete(b.id, new Date(NOW.getTime() + 60_000))!
+    expect(r.repeat).toBe(false)
+    expect(r.xp).toBeGreaterThan(0)
+    expect(G().stats.tasksCompleted).toBe(2)
+  })
+
   it('skip registra skippedAt; reschedule troca prazo e limpa skip', () => {
     const t = T().add({ title: 'x' }, NOW)
     T().skip(t.id, NOW)
@@ -136,6 +181,19 @@ describe('useTasks', () => {
     expect(T().tasks[0].steps[0].title).toBe('novo')
     T().removeStep(t.id, step.id)
     expect(T().tasks[0].steps).toEqual([])
+  })
+
+  it('restore reinsere a tarefa apagada com o mesmo id; no-op se já existe', () => {
+    const t = T().add({ title: 'x', steps: ['a'] }, NOW)
+    const other = T().add({ title: 'y' }, NOW)
+    T().remove(t.id)
+    T().restore(t)
+    expect(T().tasks.find((x) => x.id === t.id)).toEqual(t)
+    expect(T().tasks).toHaveLength(2)
+    T().restore({ ...t, title: 'duplicada' })
+    expect(T().tasks).toHaveLength(2)
+    expect(T().tasks.find((x) => x.id === t.id)?.title).toBe('x')
+    expect(T().tasks.find((x) => x.id === other.id)).toBeDefined()
   })
 
   it('remove e replaceAll', () => {

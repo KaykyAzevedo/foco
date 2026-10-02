@@ -178,7 +178,9 @@
   }
 }
 
-:root[data-theme='dark'] {
+/* .ui-theme-dark força o tema escuro numa subárvore (ex.: Modo Foco) */
+:root[data-theme='dark'],
+.ui-theme-dark {
   --accent: #7d7aff;
   --accent-strong: #9a98ff;
   --accent-2: #c77dff;
@@ -236,7 +238,8 @@
 :root[data-theme='light'] {
   color-scheme: light;
 }
-:root[data-theme='dark'] {
+:root[data-theme='dark'],
+.ui-theme-dark {
   color-scheme: dark;
 }
 

@@ -15,6 +15,11 @@ interface AnnounceOptions {
 
 export function announceReward(reward: Reward | undefined, { title, undo, allClear }: AnnounceOptions = {}) {
   if (!reward) return
+  // Re-concluir após Desfazer não rende XP (anti-farm): só confirma, sem "+0 XP" nem confete.
+  if (reward.repeat) {
+    toast({ title: title ?? 'Feito!', action: undo ? { label: 'Desfazer', onClick: undo } : undefined })
+    return
+  }
   if (allClear) celebrate('allClear')
   else celebrateReward(reward)
   if (useSettings.getState().sound) playChime(reward.leveledUp ? 'level' : 'done')

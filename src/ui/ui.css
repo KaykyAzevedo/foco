@@ -669,6 +669,8 @@ html:not([data-theme='light']) .ui-xporb-gain { color: #ffc93d; text-shadow: 0 2
   transition: opacity 900ms var(--ease-out);
 }
 .ui-mesh[data-tone='focus'] .ui-mesh-dim { opacity: 1; }
+/* no modo foco o fundo fica quase todo coberto: congela o movimento e poupa a GPU */
+.ui-mesh[data-tone='focus'] .ui-mesh-blob { animation-play-state: paused; }
 
 /* ---------- Movimento reduzido ---------- */
 @media (prefers-reduced-motion: reduce) {

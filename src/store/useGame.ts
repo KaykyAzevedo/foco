@@ -6,9 +6,10 @@ import {
   onFocusCompleted,
   onStepCompleted,
   onTaskCompleted,
+  repeatReward,
   rollDay,
 } from '@/domain'
-import type { GameResult, GameState, Reward, Task } from '@/domain'
+import type { GameResult, GameState, Reward, RewardKind, Task } from '@/domain'
 import { useTasks } from './useTasks'
 
 export interface GameStore extends GameState {
@@ -21,6 +22,8 @@ export interface GameStore extends GameState {
   stepCompleted(tasks: readonly Task[], now?: Date): Reward
   /** Sessão de foco completa (chamar ao fim do timer). */
   focusCompleted(now?: Date): Reward
+  /** Re-conclusão (já premiada antes): xp 0, sem mexer no estado. Chamado pelo useTasks. */
+  repeated(kind: RewardKind, now?: Date): Reward
   /** Chamado por useTasks.plan. */
   dayPlanned(tasks: readonly Task[], now?: Date): Reward
   /** Troca o registro diário se o dia virou (chamar ao abrir o app é opcional). */
@@ -57,6 +60,7 @@ export const useGame = create<GameStore>()(
         stepCompleted: (tasks, now = new Date()) => apply(onStepCompleted(gameData(get()), tasks, now)),
         focusCompleted: (now = new Date()): Reward =>
           apply(onFocusCompleted(gameData(get()), useTasks.getState().tasks, now)),
+        repeated: (kind, now = new Date()) => apply(repeatReward(gameData(get()), kind, now)),
         dayPlanned: (tasks, now = new Date()) => apply(onDayPlanned(gameData(get()), tasks, now)),
         touchDay: (now = new Date()) => {
           const next = rollDay(gameData(get()), now)

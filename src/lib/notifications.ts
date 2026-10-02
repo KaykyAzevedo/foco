@@ -1,6 +1,8 @@
 // Lembretes via Notification API: 1 dia antes, 1 hora antes e no prazo.
 import { DAY, HOUR, formatDue, formatHour, toDate } from '@/domain'
 import type { Task } from '@/domain'
+import { useSettings } from '@/store/useSettings'
+import { useTasks } from '@/store/useTasks'
 
 export type ReminderKind = 'day' | 'hour' | 'due'
 
@@ -58,13 +60,42 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   return Notification.requestPermission()
 }
 
-export function notify(title: string, body: string, tag?: string): void {
-  if (notificationPermission() !== 'granted') return
+const ICON = '/icons/icon-192.png'
+
+/**
+ * Mostra uma notificação. Usa o service worker quando existe (funciona com a aba em segundo plano
+ * e no app instalado; tocar abre/foca o Foco). Sem SW, cai para `new Notification`.
+ * Devolve true se mostrou.
+ */
+export async function notify(title: string, body: string, tag?: string): Promise<boolean> {
+  if (notificationPermission() !== 'granted') return false
+  const options: NotificationOptions = { body, tag, icon: ICON, badge: ICON, lang: 'pt-BR', data: { url: '/' } }
   try {
-    new Notification(title, { body, tag })
+    const reg = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistration() : undefined
+    if (reg) {
+      await reg.showNotification(title, options)
+      return true
+    }
+    new Notification(title, options)
+    return true
   } catch {
-    // alguns navegadores móveis exigem service worker; ignora silenciosamente
+    return false
   }
+}
+
+/**
+ * Para o botão "Ativar lembretes" dos ajustes: pede permissão e, se concedida,
+ * liga `useSettings.notifications`. Devolve a permissão final.
+ */
+export async function enableReminders(): Promise<NotificationPermission | 'unsupported'> {
+  const permission = await requestNotificationPermission()
+  useSettings.getState().setNotifications(permission === 'granted')
+  return permission
+}
+
+/** Notificação de teste ("Lembretes ativados ✨"). */
+export function sendTestNotification(): Promise<boolean> {
+  return notify('Foco', 'Lembretes ativados ✨ Vou te avisar 1 dia antes, 1 hora antes e no prazo.', 'foco:test')
 }
 
 const SENT_KEY = 'foco:reminders-sent'
@@ -90,16 +121,23 @@ export interface ReminderLoopOptions {
   intervalMs?: number
   /** ao iniciar, recupera lembretes perdidos nos últimos N ms (padrão 15 min) */
   catchUpMs?: number
-  /** consultado a cada checagem, ex.: () => useSettings.getState().notifications */
+  /** consultado a cada checagem (padrão: useSettings.notifications) */
   isEnabled?: () => boolean
   /** substitui o envio (testes / toast interno) */
   onReminder?: (r: Reminder) => void
 }
 
 /** Inicia o laço de lembretes. Devolve a função para parar. */
-export function startReminderLoop(getTasks: () => readonly Task[], opts: ReminderLoopOptions = {}): () => void {
-  const { intervalMs = 30_000, catchUpMs = 15 * 60_000, isEnabled = () => true } = opts
-  const send = opts.onReminder ?? ((r: Reminder) => notify(r.title, r.body, r.key))
+export function startReminderLoop(
+  getTasks: () => readonly Task[] = () => useTasks.getState().tasks,
+  opts: ReminderLoopOptions = {},
+): () => void {
+  const {
+    intervalMs = 30_000,
+    catchUpMs = 15 * 60_000,
+    isEnabled = () => useSettings.getState().notifications,
+  } = opts
+  const send = opts.onReminder ?? ((r: Reminder) => void notify(r.title, r.body, r.key))
   let since = new Date(Date.now() - catchUpMs)
   const tick = () => {
     const now = new Date()
@@ -116,5 +154,11 @@ export function startReminderLoop(getTasks: () => readonly Task[], opts: Reminde
   }
   tick()
   const id = setInterval(tick, intervalMs)
-  return () => clearInterval(id)
+  // abas em segundo plano têm timers estrangulados: ao voltar, checa na hora
+  const onVisible = () => document.visibilityState === 'visible' && tick()
+  document.addEventListener('visibilitychange', onVisible)
+  return () => {
+    clearInterval(id)
+    document.removeEventListener('visibilitychange', onVisible)
+  }
 }

@@ -5,9 +5,19 @@ import { at, makeTask, NOW } from '@/domain/test-utils'
 import { useGame } from '@/store/useGame'
 import { useSettings } from '@/store/useSettings'
 import { useTasks } from '@/store/useTasks'
-import { createBackup, parseBackup, restoreBackup, serializeBackup } from './backup'
+import {
+  backupFileName,
+  backupSummary,
+  createBackup,
+  importBackupFile,
+  parseBackup,
+  readBackupFile,
+  resetAllData,
+  restoreBackup,
+  serializeBackup,
+} from './backup'
 import { celebrationFor } from './confetti'
-import { dueReminders, remindersFor, startReminderLoop } from './notifications'
+import { dueReminders, notify, remindersFor, startReminderLoop } from './notifications'
 
 describe('notifications', () => {
   it('remindersFor: 1 dia, 1 hora e no prazo', () => {
@@ -57,7 +67,7 @@ describe('notifications', () => {
 describe('confetti', () => {
   const base: Reward = {
     kind: 'task', xp: 10, breakdown: [], combo: 1, comboMultiplier: 1, streak: 1, shieldUsed: false,
-    levelBefore: 1, levelAfter: 1, leveledUp: false, unlocked: [], at: NOW.toISOString(),
+    levelBefore: 1, levelAfter: 1, leveledUp: false, unlocked: [], repeat: false, at: NOW.toISOString(),
   }
   it('só marcos soltam confete', () => {
     expect(celebrationFor(base)).toBeUndefined()
@@ -118,8 +128,87 @@ describe('backup', () => {
     if (!r.ok) return
     expect(r.backup.tasks).toHaveLength(1)
     expect(r.backup.tasks[0]).toMatchObject({ id: 'ok', due: undefined, urgent: false, fromBoss: false })
-    expect(r.backup.tasks[0].steps).toEqual([{ id: 'step-0', title: 'p', done: false }])
+    expect(r.backup.tasks[0].steps).toEqual([{ id: 'step-0', title: 'p', done: false, rewarded: undefined }])
     expect(r.backup.settings).toMatchObject({ theme: 'system', focusMinutes: 15 })
     expect(r.backup.game.xp).toBe(0)
+  })
+
+  it('backup antigo sem rewardedAt: concluídas contam como já premiadas (anti-farm)', () => {
+    const text = JSON.stringify({
+      app: 'foco',
+      version: 1,
+      tasks: [{ id: 'a', title: 'a', doneAt: at(2026, 10, 1, 9), steps: [{ id: 's', title: 's', done: true }] }],
+    })
+    const r = parseBackup(text, NOW)
+    if (!r.ok) throw new Error(r.error)
+    expect(r.backup.tasks[0].rewardedAt).toBe(at(2026, 10, 1, 9))
+    expect(r.backup.tasks[0].steps[0].rewarded).toBe(true)
+    restoreBackup(r.backup)
+    useTasks.getState().uncomplete('a')
+    expect(useTasks.getState().complete('a', NOW)?.xp).toBe(0)
+  })
+
+  it('backupSummary e backupFileName', () => {
+    useTasks.getState().add({ title: 'a' }, NOW)
+    useTasks.getState().add({ title: 'b' }, NOW)
+    useTasks.getState().complete(useTasks.getState().tasks[0].id, NOW)
+    const s = backupSummary(createBackup(new Date(2026, 9, 2, 11, 30)))
+    expect(s).toMatchObject({ tasks: 2, open: 1, done: 1, level: 1 })
+    expect(s.text).toBe('2 tarefas (1 aberta) · nível 1 · salvo em 02/10/2026 às 11h30')
+    expect(backupFileName(NOW)).toBe('foco-backup-2026-10-02.json')
+  })
+
+  it('readBackupFile não aplica; importBackupFile aplica', async () => {
+    useTasks.getState().add({ title: 'original' }, NOW)
+    const text = serializeBackup({ ...createBackup(NOW), tasks: [makeTask({ id: 'imp', title: 'importada' })] })
+    const file = new File([text], 'foco.json', { type: 'application/json' })
+    const preview = await readBackupFile(file)
+    expect(preview.ok).toBe(true)
+    expect(useTasks.getState().tasks[0].title).toBe('original')
+    await importBackupFile(file)
+    expect(useTasks.getState().tasks.map((t) => t.title)).toEqual(['importada'])
+    expect(await readBackupFile(new File(['xx'], 'x.json'))).toMatchObject({ ok: false })
+  })
+
+  it('resetAllData zera tudo', () => {
+    useTasks.getState().add({ title: 'a' }, NOW)
+    useTasks.getState().complete(useTasks.getState().tasks[0].id, NOW)
+    useSettings.getState().setTheme('dark')
+    localStorage.setItem('foco:reminders-sent', '["x"]')
+    resetAllData()
+    expect(useTasks.getState().tasks).toEqual([])
+    expect(useGame.getState().xp).toBe(0)
+    expect(useSettings.getState().theme).toBe('system')
+    expect(localStorage.getItem('foco:reminders-sent')).toBeNull()
+  })
+})
+
+describe('notify', () => {
+  it('sem permissão não mostra nada', async () => {
+    vi.stubGlobal('Notification', Object.assign(vi.fn(), { permission: 'default' }))
+    expect(await notify('t', 'b')).toBe(false)
+    vi.unstubAllGlobals()
+  })
+
+  it('usa o service worker quando registrado (funciona com a aba em segundo plano)', async () => {
+    const showNotification = vi.fn().mockResolvedValue(undefined)
+    const ctor = vi.fn()
+    vi.stubGlobal('Notification', Object.assign(ctor, { permission: 'granted' }))
+    Object.defineProperty(navigator, 'serviceWorker', {
+      configurable: true,
+      value: { getRegistration: vi.fn().mockResolvedValue({ showNotification }) },
+    })
+    expect(await notify('Relatório', 'Falta 1 hora', 'k')).toBe(true)
+    expect(showNotification).toHaveBeenCalledWith('Relatório', expect.objectContaining({ body: 'Falta 1 hora', tag: 'k', data: { url: '/' } }))
+    expect(ctor).not.toHaveBeenCalled()
+    // sem registro: cai para new Notification
+    Object.defineProperty(navigator, 'serviceWorker', {
+      configurable: true,
+      value: { getRegistration: vi.fn().mockResolvedValue(undefined) },
+    })
+    expect(await notify('A', 'B')).toBe(true)
+    expect(ctor).toHaveBeenCalled()
+    Reflect.deleteProperty(navigator, 'serviceWorker')
+    vi.unstubAllGlobals()
   })
 })

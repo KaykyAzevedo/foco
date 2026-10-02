@@ -45,7 +45,7 @@ const { capture, complete, skip } = useTasks.getState()
 | `add` / `addTask` | `(input: NewTaskInput) => Task` | Aceita direto o retorno de `parseCapture` (chips são ignorados). `steps` pode ser `string[]`. |
 | `update` / `updateTask` | `(id, patch: Partial<Task>) => void` | |
 | `complete` / `completeTask` | `(id) => Reward \| undefined` | **Devolve a recompensa** (XP, nível, conquistas, missão). `undefined` se já feita/inexistente. |
-| `uncomplete` | `(id) => void` | Para "Desfazer". Não retira XP. |
+| `uncomplete` | `(id) => void` | Para "Desfazer". Não retira XP — e re-concluir depois rende **xp 0** (anti-farm, ver abaixo). |
 | `skip` / `skipTask` | `(id) => void` | "Pular por agora": vai para o fim da fila de hoje. |
 | `reschedule` / `rescheduleTask` | `(id, due: string \| undefined) => void` | Reagendar com 1 toque (limpa o "pulado"). |
 | `plan` | `({ main: string[], extra?: string[] }) => Reward` | Ritual "Planejar meu dia". Máx. 3 principais (excedente ignorado). **Substitui** o plano de hoje (abertas que saíram voltam para a Caixa). Define `order`. |
@@ -53,11 +53,12 @@ const { capture, complete, skip } = useTasks.getState()
 | `addToToday` | `(id, now?, isMain?) => void` | Joga uma tarefa no fim de Hoje. |
 | `removeFromToday` | `(id) => void` | |
 | `reorder` / `reorderToday` | `(ids: string[]) => void` | Ordem manual (arrastar). `order = índice`. |
-| `toggleStep` / `completeStep` | `(taskId, stepId) => Reward \| undefined` | Alterna; recompensa só quando marca como feito. |
+| `toggleStep` / `completeStep` | `(taskId, stepId) => Reward \| undefined` | Alterna; recompensa só quando marca como feito (xp 0 se o passo já tinha rendido). |
 | `addStep` | `(taskId, title) => Step \| undefined` | |
 | `updateStep` | `(taskId, stepId, title) => void` | |
 | `removeStep` | `(taskId, stepId) => void` | |
 | `remove` | `(id) => void` | |
+| `restore` | `(task: Task) => void` | Desfazer de Apagar: reinsere com o mesmo id (no-op se o id já existe). |
 | `replaceAll` | `(tasks) => void` | Usado pelo importar. |
 
 ## `useGame`
@@ -86,9 +87,13 @@ Estado: `xp`, `streak` (`StreakState`), `combo`, `stats`, `today` (registro do d
   levelBefore: number; levelAfter: number; leveledUp: boolean
   missionCompleted?: Mission
   unlocked: Achievement[]    // { id, title, description, icon (emoji) }
+  repeat: boolean            // true = re-conclusão (Feito → Desfazer → Feito): xp 0, sem combo/missão/conquista
   at: string
 }
 ```
+
+**Anti-farm:** cada tarefa/passo paga XP só uma vez (`Task.rewardedAt`, `Step.rewarded`). Re-concluir devolve
+`Reward` com `xp: 0` e `repeat: true` (nunca `undefined`), para a UI ainda dizer "Feito!" — sugestão: não mostrar "+0 XP".
 
 Padrão sugerido:
 
@@ -165,17 +170,35 @@ Reconhece (sem diferenciar maiúsculas/acentos):
 
 ## Lib (`@/lib/...`)
 
-- **`notifications.ts`**: `requestNotificationPermission()`, `notificationPermission()`, `notify(title, body)`,
-  `remindersFor(task)` (1 dia antes, 1 h antes, no prazo), `dueReminders(...)` (puro),
-  `startReminderLoop(getTasks, { isEnabled?, intervalMs?, onReminder? }) → stop`.
-  Sugestão no `App.tsx`:
-  ```ts
-  useEffect(() => startReminderLoop(() => useTasks.getState().tasks,
-    { isEnabled: () => useSettings.getState().notifications }), [])
-  ```
+- **`notifications.ts`**: `enableReminders()` (pede permissão + liga `useSettings.notifications`; para o botão dos ajustes),
+  `sendTestNotification()`, `requestNotificationPermission()`, `notificationPermission()`,
+  `notify(title, body, tag?) → Promise<boolean>` (via service worker quando existe: funciona com a aba em segundo plano
+  e no app instalado; tocar na notificação foca/abre o Foco), `remindersFor(task)` (1 dia antes, 1 h antes, no prazo),
+  `dueReminders(...)` (puro), `startReminderLoop(getTasks?, { isEnabled?, intervalMs?, onReminder? }) → stop`
+  (padrões: tarefas do `useTasks` e `useSettings.notifications`; checa de novo ao voltar para a aba).
+  Limitação: com o app/navegador **totalmente fechado** não há lembrete (exigiria push com servidor — fora do escopo v1).
+- **`pwa.ts`**: `useInstallPrompt() → { canInstall, install, standalone, iosHint }` para um botão "Instalar o Foco"
+  (`iosHint`: mostrar "Compartilhar → Adicionar à Tela de Início"); também `promptInstall()`, `canInstall()`, `isStandalone()`.
 - **`confetti.ts`**: `celebrate(kind)`, `celebrateReward(reward)`, `celebrationFor(reward)` — respeita `prefers-reduced-motion`.
 - **`sound.ts`**: `playChime('done' | 'level')` (WebAudio, sem arquivos).
-- **`backup.ts`**: `downloadBackup()`, `importBackupFile(file) → Promise<{ ok: true } | { ok: false; error }>` (mensagens PT-BR),
-  `createBackup`, `serializeBackup`, `parseBackup`, `restoreBackup`.
+- **`backup.ts`** (tela de ajustes):
+  - Exportar: `downloadBackup()` → baixa `foco-backup-AAAA-MM-DD.json`.
+  - Importar com confirmação: `readBackupFile(file) → { ok: true, backup } | { ok: false, error }` (não aplica) →
+    `backupSummary(backup).text` ("12 tarefas (3 abertas) · nível 4 · salvo em 02/10/2026 às 11h30") →
+    `restoreBackup(backup)`. Ou direto: `importBackupFile(file)`.
+  - `resetAllData()` apaga tudo (peça confirmação antes).
+  - Puros: `createBackup`, `serializeBackup`, `parseBackup` (descarta itens inválidos; mensagens de erro em PT-BR).
 - **`useNow.ts`**: `useNow(intervalMs = 30000): Date` — para contagens regressivas.
 - **`id.ts`**: `uid()`.
+
+---
+
+## PWA (dono: Atlas)
+
+- `vite-plugin-pwa` (`generateSW`, `registerType: 'autoUpdate'`, registro injetado automaticamente — nada a fazer no React).
+- Manifest: nome/short_name "Foco", `lang: pt-BR`, standalone, `theme_color #5856d6`, `background_color #eef0f8`.
+- Ícones em `public/icons/` (192, 512, maskable 512, apple-touch 180, SVG) + `public/favicon.svg`/`favicon-32.png`.
+- Offline: todo o app (JS/CSS/HTML/ícones) fica em cache; navegação cai em `/index.html`.
+- `public/sw-notifications.js` (importado pelo SW): clique na notificação foca a aba do Foco ou abre uma nova
+  e envia `postMessage({ type: 'foco:notification-click', tag })` para a página.
+- O SW só existe no build (`npm run build && npm run preview`); em `npm run dev` está desligado.

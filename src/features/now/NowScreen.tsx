@@ -1,13 +1,14 @@
 // Agora — UMA tarefa, a próxima (nextTask). Ação primária: Começar → Modo Foco.
 // Feito → XP + Desfazer; Pular por agora → fim da fila de hoje, sem punição.
-import { useEffect, useRef, type RefObject } from 'react'
+import { useRef, type RefObject } from 'react'
 import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion/react'
 import { Check, Crown, Footprints, Play, SkipForward, Timer, Zap } from 'lucide-react'
 import { formatEstimate, nextTask, urgencyOf, type Task } from '@/domain'
 import { useNow } from '@/lib/useNow'
 import { useNextTask, useTasks } from '@/store'
 import { Button, Chip, Countdown, fade, Glass, springs, toast } from '@/ui'
-import { announceReward } from '../game/reward'
+import { announceReward } from '../reward'
+import { useFocusOnMount } from '../shared/useFocusOnMount'
 
 /** Como o card saiu: concluído, pulado, ou trocado por outro motivo (ex.: captura urgente). */
 type Exit = 'done' | 'skip' | 'replace'
@@ -69,17 +70,6 @@ export function NowScreen({ onStartFocus, onCapture }: Props) {
       </AnimatePresence>
     </section>
   )
-}
-
-/** Ao montar, foca o elemento se a flag estiver ligada e a consome (preserva o teclado após Feito/Pular). */
-function useFocusOnMount<T extends HTMLElement>(flag: RefObject<boolean>) {
-  const ref = useRef<T>(null)
-  useEffect(() => {
-    if (!flag.current) return
-    flag.current = false
-    ref.current?.focus({ preventScroll: true })
-  }, [flag])
-  return ref
 }
 
 // Saída depende de como o card saiu: "Feito" sobe e some; "Pular" desliza pro lado; troca = só fade.

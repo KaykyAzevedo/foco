@@ -38,7 +38,7 @@ export interface TasksState {
   update(id: string, patch: TaskPatch): void
   /** Conclui e devolve a recompensa (XP, nível, conquistas…) para a UI celebrar. */
   complete(id: string, now?: Date): Reward | undefined
-  /** Desfaz a conclusão (o XP ganho não é retirado — perdoar falhas). */
+  /** Desfaz a conclusão (o XP ganho não é retirado — perdoar falhas; re-concluir depois rende xp 0). */
   uncomplete(id: string): void
   /** "Pular por agora": vai para o fim da fila de hoje, sem punição. */
   skip(id: string, now?: Date): void
@@ -51,12 +51,14 @@ export interface TasksState {
   removeFromToday(id: string): void
   /** Ordem manual de "Hoje" (ids na ordem desejada). */
   reorder(ids: string[]): void
-  /** Alterna um micro-passo. Devolve recompensa quando ele passa a feito. */
+  /** Alterna um micro-passo. Devolve recompensa quando ele passa a feito (xp 0 se já tinha rendido). */
   toggleStep(taskId: string, stepId: string, now?: Date): Reward | undefined
   addStep(taskId: string, title: string): Step | undefined
   updateStep(taskId: string, stepId: string, title: string): void
   removeStep(taskId: string, stepId: string): void
   remove(id: string): void
+  /** Reinsere uma tarefa apagada (Desfazer), com o mesmo id. No-op se o id já existir. */
+  restore(task: Task): void
   /** Substitui tudo (usado pelo importar JSON). */
   replaceAll(tasks: Task[]): void
 
@@ -114,9 +116,17 @@ export const useTasks = create<TasksState>()(
       complete(id, now = new Date()): Reward | undefined {
         const current = get().tasks.find((t) => t.id === id)
         if (!current || current.doneAt) return undefined
-        const done: Task = { ...current, doneAt: now.toISOString(), skippedAt: undefined }
+        const repeat = current.rewardedAt != null
+        const done: Task = {
+          ...current,
+          doneAt: now.toISOString(),
+          skippedAt: undefined,
+          rewardedAt: current.rewardedAt ?? now.toISOString(),
+        }
         const tasks = mapTask(get().tasks, id, () => done)
         set({ tasks })
+        // Feito → Desfazer → Feito não paga de novo (anti-farm), mas a UI recebe um Reward com xp 0
+        if (repeat) return useGame.getState().repeated('task', now)
         return useGame.getState().taskCompleted(done, tasks, now)
       },
 
@@ -183,12 +193,16 @@ export const useTasks = create<TasksState>()(
         const step = task?.steps.find((st) => st.id === stepId)
         if (!task || !step) return undefined
         const nowDone = !step.done
+        const repeat = step.rewarded === true
         const tasks = mapTask(get().tasks, taskId, (t) => ({
           ...t,
-          steps: t.steps.map((st) => (st.id === stepId ? { ...st, done: nowDone } : st)),
+          steps: t.steps.map((st) =>
+            st.id === stepId ? { ...st, done: nowDone, rewarded: st.rewarded || nowDone || undefined } : st,
+          ),
         }))
         set({ tasks })
-        return nowDone ? useGame.getState().stepCompleted(tasks, now) : undefined
+        if (!nowDone) return undefined
+        return repeat ? useGame.getState().repeated('step', now) : useGame.getState().stepCompleted(tasks, now)
       },
 
       addStep(taskId, title) {
@@ -215,6 +229,11 @@ export const useTasks = create<TasksState>()(
 
       remove(id) {
         set((s) => ({ tasks: s.tasks.filter((t) => t.id !== id) }))
+      },
+
+      restore(task) {
+        if (get().tasks.some((t) => t.id === task.id)) return
+        set((s) => ({ tasks: [...s.tasks, task] }))
       },
 
       replaceAll(tasks) {

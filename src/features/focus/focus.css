@@ -1,0 +1,149 @@
+/* Modo Foco — tela cheia em vidro escuro. Usa .ui-theme-dark para forçar os tokens escuros. */
+.focus-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: var(--text);
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgb(88 86 214 / 0.18), transparent 60%),
+    rgb(5 5 14 / 0.8);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  outline: none;
+}
+.focus-screen[data-phase='break'] {
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgb(61 219 174 / 0.16), transparent 60%),
+    rgb(4 10 12 / 0.8);
+}
+.focus-inner {
+  min-height: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: calc(14px + var(--safe-top)) 20px calc(28px + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+.focus-top {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+}
+.focus-eyebrow {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 var(--text-xs) / 1 var(--font-sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.focus-dots { display: inline-flex; gap: 4px; }
+.focus-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+.focus-title {
+  margin: 0;
+  text-align: center;
+  font: 700 clamp(1.5rem, 6vw, 2.1rem) / 1.15 var(--font-display);
+  letter-spacing: var(--tracking-display);
+  text-wrap: balance;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.focus-ring-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: 6px 0;
+}
+.focus-glow {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--_glow, rgb(125 122 255 / 0.4)), transparent 68%);
+  filter: blur(18px);
+  pointer-events: none;
+}
+.focus-screen[data-phase='break'] .focus-glow { --_glow: rgb(61 219 174 / 0.4); }
+.focus-screen[data-phase='finished'] .focus-glow { --_glow: rgb(255 184 0 / 0.42); }
+.focus-clock {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+.focus-time {
+  font: 300 clamp(3.2rem, 15vw, 4.6rem) / 1 var(--font-rounded);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.045em;
+  color: var(--text);
+}
+.focus-status {
+  font: 600 var(--text-sm) / 1 var(--font-sans);
+  color: var(--text-2);
+  letter-spacing: 0.01em;
+}
+.focus-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.focus-steps {
+  width: 100%;
+  padding: 16px 18px;
+  display: grid;
+  gap: 12px;
+}
+.focus-steps-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font: 600 var(--text-xs) / 1 var(--font-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.focus-step-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-full);
+  border: 0;
+  background: color-mix(in srgb, var(--text) 7%, transparent);
+  box-shadow: inset 0 0 0 1px var(--separator);
+  color: var(--text);
+  font: 500 var(--text-sm) / 1 var(--font-sans);
+}
+.focus-step-input::placeholder { color: var(--text-3); }
+.focus-step-input:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 1px; }
+.focus-nudge {
+  width: 100%;
+  padding: 16px 18px;
+  display: grid;
+  gap: 12px;
+}
+.focus-nudge p { margin: 0; color: var(--text-2); font-size: var(--text-sm); line-height: 1.4; }
+.focus-nudge strong { color: var(--text); font-size: var(--text-md); }
+.focus-finish {
+  width: 100%;
+  padding: 20px;
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  text-align: center;
+}
+.focus-finish h2 { margin: 0; font-size: var(--text-xl); }

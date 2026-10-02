@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Inbox, Sparkles, Sun } from 'lucide-react'
-import { useGameSummary } from '@/store'
+import { startReminderLoop } from '@/lib/notifications'
+import { useGameSummary, useSettings, useTasks } from '@/store'
 import {
   AppBackground,
   TabBar,
@@ -47,6 +48,14 @@ function Shell() {
   const openCapture = useCallback(() => setOverlay((o) => (o?.kind === 'focus' ? o : { kind: 'capture' })), [])
 
   useAppliedTheme()
+  // Lembretes (1 dia antes, 1 h antes, no prazo) — só envia se o usuário ligou notificações.
+  useEffect(
+    () =>
+      startReminderLoop(() => useTasks.getState().tasks, {
+        isEnabled: () => useSettings.getState().notifications,
+      }),
+    [],
+  )
   useCaptureShortcut(openCapture)
   useMorningSummaryToast()
 
@@ -79,7 +88,7 @@ function Shell() {
             {tab === 'now' && (
               <NowScreen onStartFocus={(taskId) => setOverlay({ kind: 'focus', taskId })} onCapture={openCapture} />
             )}
-            {tab === 'today' && <TodayScreen />}
+            {tab === 'today' && <TodayScreen onStartFocus={(taskId) => setOverlay({ kind: 'focus', taskId })} />}
             {tab === 'inbox' && <InboxScreen />}
           </motion.div>
         </AnimatePresence>

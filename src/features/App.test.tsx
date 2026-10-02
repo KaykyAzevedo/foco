@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, configure, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { dayKey } from '@/domain'
 import { useGame, useSettings, useTasks } from '@/store'
 import { toast } from '@/ui'
@@ -6,6 +6,9 @@ import App from '../App'
 import { greeting } from './now/useMorningSummaryToast'
 
 // jsdom não tem canvas
+// o App inteiro é pesado no jsdom; findBy* com folga evita timeouts intermitentes
+configure({ asyncUtilTimeout: 4000 })
+
 vi.mock('@/lib/confetti', () => ({ celebrateReward: vi.fn(), celebrate: vi.fn() }))
 
 beforeEach(() => {
@@ -68,6 +71,17 @@ describe('Agora', () => {
     expect(useTasks.getState().tasks.find((t) => t.id === task.id)?.doneAt).toBeUndefined()
   })
 
+  it('re-concluir após Desfazer não mostra "+0 XP"', async () => {
+    useTasks.getState().add({ title: 'Repetida' })
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Feito' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Desfazer' }))
+    act(() => toast.clear())
+    fireEvent.click(await screen.findByRole('button', { name: 'Feito' }))
+    expect(await screen.findByText('Feito!')).toBeInTheDocument()
+    expect(screen.queryByText(/\+0 XP/)).not.toBeInTheDocument()
+  })
+
   it('Pular por agora mostra a próxima tarefa, sem punição', async () => {
     const { add } = useTasks.getState()
     add({ title: 'Primeira', urgent: true })
@@ -112,7 +126,7 @@ describe('Agora', () => {
     useTasks.getState().add({ title: 'Escrever proposta' })
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Começar' }))
-    expect(await screen.findByRole('dialog', { name: 'Modo foco' })).toBeInTheDocument()
+    expect(await screen.findByRole('dialog', { name: /^Modo foco/ })).toBeInTheDocument()
   })
 })
 

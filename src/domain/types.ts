@@ -6,6 +6,8 @@ export interface Step {
   id: string
   title: string
   done: boolean
+  /** já rendeu XP uma vez (desmarcar e marcar de novo não paga de novo) */
+  rewarded?: boolean
 }
 
 export interface Task {
@@ -27,6 +29,8 @@ export interface Task {
   isMain?: boolean
   steps: Step[]
   doneAt?: string
+  /** ISO da primeira conclusão que rendeu XP (re-concluir após "Desfazer" não paga de novo) */
+  rewardedAt?: string
   /** "pular por agora" */
   skippedAt?: string
   /** ordem manual em Hoje */
@@ -157,6 +161,8 @@ export interface Reward {
   leveledUp: boolean
   missionCompleted?: Mission
   unlocked: Achievement[]
+  /** true quando é uma re-conclusão (após Desfazer): xp 0, sem combo/missão/conquista */
+  repeat: boolean
   /** ISO */
   at: string
 }

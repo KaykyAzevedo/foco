@@ -1,5 +1,5 @@
 // Exportar/importar todos os dados em JSON (local-first, sem nuvem).
-import { dayKey, initialGameState, isValidISO } from '@/domain'
+import { dayKey, formatHour, initialGameState, isValidISO, levelFromXp, toDate } from '@/domain'
 import type { GameState, Settings, Step, Task } from '@/domain'
 import { gameData, useGame } from '@/store/useGame'
 import { DEFAULT_SETTINGS, settingsData, useSettings } from '@/store/useSettings'
@@ -24,7 +24,12 @@ const optISO = (v: unknown) => (isValidISO(v) ? v : undefined)
 
 function sanitizeStep(v: unknown, i: number): Step | undefined {
   if (!isObj(v) || typeof v.title !== 'string') return undefined
-  return { id: typeof v.id === 'string' ? v.id : `step-${i}`, title: v.title, done: v.done === true }
+  return {
+    id: typeof v.id === 'string' ? v.id : `step-${i}`,
+    title: v.title,
+    done: v.done === true,
+    rewarded: v.rewarded === true || v.done === true || undefined,
+  }
 }
 
 function sanitizeTask(v: unknown): Task | undefined {
@@ -43,6 +48,8 @@ function sanitizeTask(v: unknown): Task | undefined {
     isMain: typeof v.isMain === 'boolean' ? v.isMain : undefined,
     steps,
     doneAt: optISO(v.doneAt),
+    // backups antigos sem rewardedAt: concluídas contam como já premiadas
+    rewardedAt: optISO(v.rewardedAt) ?? optISO(v.doneAt),
     skippedAt: optISO(v.skippedAt),
     order: typeof v.order === 'number' ? v.order : undefined,
   }
@@ -121,22 +128,72 @@ export function restoreBackup(backup: Backup): void {
   useSettings.getState().update(backup.settings)
 }
 
-/** Baixa `foco-backup-AAAA-MM-DD.json`. */
+export function backupFileName(now: Date = new Date()): string {
+  return `foco-backup-${dayKey(now)}.json`
+}
+
+/** Baixa `foco-backup-AAAA-MM-DD.json` com todos os dados. */
 export function downloadBackup(now: Date = new Date()): void {
   const blob = new Blob([serializeBackup(createBackup(now))], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `foco-backup-${dayKey(now)}.json`
+  a.download = backupFileName(now)
   document.body.appendChild(a)
   a.click()
   a.remove()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-/** Lê um arquivo escolhido pelo usuário e, se válido, restaura. */
+/** Lê e valida um arquivo SEM aplicar — para mostrar um resumo e pedir confirmação. */
+export async function readBackupFile(file: File): Promise<ParseResult> {
+  try {
+    return parseBackup(await file.text())
+  } catch {
+    return { ok: false, error: 'Não consegui ler o arquivo.' }
+  }
+}
+
+/** Lê um arquivo e, se válido, restaura na hora (substitui tudo). */
 export async function importBackupFile(file: File): Promise<ParseResult> {
-  const result = parseBackup(await file.text())
+  const result = await readBackupFile(file)
   if (result.ok) restoreBackup(result.backup)
   return result
+}
+
+export interface BackupSummary {
+  tasks: number
+  open: number
+  done: number
+  level: number
+  xp: number
+  exportedAt: string
+  /** frase pronta: "12 tarefas (3 abertas) · nível 4 · salvo em 02/10/2026 às 11h30" */
+  text: string
+}
+
+/** Resumo para o diálogo "Substituir seus dados por este backup?" (puro). */
+export function backupSummary(backup: Backup): BackupSummary {
+  const done = backup.tasks.filter((t) => t.doneAt).length
+  const open = backup.tasks.length - done
+  const level = levelFromXp(backup.game.xp).level
+  const d = toDate(backup.exportedAt)
+  const date = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
+  const n = backup.tasks.length
+  const text =
+    `${n} ${n === 1 ? 'tarefa' : 'tarefas'} (${open} ${open === 1 ? 'aberta' : 'abertas'}) · ` +
+    `nível ${level} · salvo em ${date} às ${formatHour(d)}`
+  return { tasks: n, open, done, level, xp: backup.game.xp, exportedAt: backup.exportedAt, text }
+}
+
+/** Apaga tudo (tarefas, progresso, ajustes e lembretes enviados). Peça confirmação na UI antes. */
+export function resetAllData(): void {
+  useTasks.getState().replaceAll([])
+  useGame.getState().reset()
+  useSettings.getState().reset()
+  try {
+    localStorage.removeItem('foco:reminders-sent')
+  } catch {
+    /* sem armazenamento */
+  }
 }

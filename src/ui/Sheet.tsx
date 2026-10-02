@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type PointerEvent, type ReactNode } from 'react'
+import { useId, useRef, type PointerEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, useDragControls, useReducedMotion, type PanInfo } from 'motion/react'
 import clsx from 'clsx'
@@ -6,6 +6,7 @@ import { X } from 'lucide-react'
 import { Glass } from './Glass'
 import { Button } from './Button'
 import { springs } from './motion'
+import { useFocusTrap } from './useFocusTrap'
 
 export interface SheetProps {
   open: boolean
@@ -22,9 +23,6 @@ export interface SheetProps {
   className?: string
 }
 
-const FOCUSABLE =
-  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
-
 /**
  * Bottom sheet de vidro, arrastável pela alça/cabeçalho (puxe para baixo para fechar).
  * Diálogo modal: foco preso, Esc fecha, devolve o foco ao fechar, trava o scroll do body.
@@ -34,63 +32,7 @@ export function Sheet({ open, onClose, title, children, showClose, footer, class
   const panelRef = useRef<HTMLDivElement>(null)
   const controls = useDragControls()
   const reduced = useReducedMotion()
-  const onCloseRef = useRef(onClose)
-  useEffect(() => {
-    onCloseRef.current = onClose
-  }, [onClose])
-
-  // Esc, foco preso, restauração de foco e trava de scroll
-  useEffect(() => {
-    if (!open) return
-    const previous = document.activeElement as HTMLElement | null
-    const { overflow } = document.body.style
-    document.body.style.overflow = 'hidden'
-
-    const focusFirst = () => {
-      const panel = panelRef.current
-      if (!panel) return
-      const auto = panel.querySelector<HTMLElement>('[autofocus],[data-autofocus]')
-      ;(auto ?? panel).focus({ preventScroll: true })
-    }
-    const raf = requestAnimationFrame(focusFirst)
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation()
-        onCloseRef.current()
-        return
-      }
-      if (e.key !== 'Tab' || !panelRef.current) return
-      const items = Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-        (el) => el.offsetParent !== null || el === document.activeElement,
-      )
-      if (items.length === 0) {
-        e.preventDefault()
-        panelRef.current.focus()
-        return
-      }
-      const first = items[0]
-      const last = items[items.length - 1]
-      const active = document.activeElement
-      if (e.shiftKey && (active === first || active === panelRef.current)) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && active === last) {
-        e.preventDefault()
-        first.focus()
-      } else if (!panelRef.current.contains(active)) {
-        e.preventDefault()
-        first.focus()
-      }
-    }
-    document.addEventListener('keydown', onKey, true)
-    return () => {
-      cancelAnimationFrame(raf)
-      document.removeEventListener('keydown', onKey, true)
-      document.body.style.overflow = overflow
-      previous?.focus?.({ preventScroll: true })
-    }
-  }, [open])
+  useFocusTrap(panelRef, open, { onEscape: onClose })
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
     if (info.offset.y > 120 || info.velocity.y > 600) onClose()

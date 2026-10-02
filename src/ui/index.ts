@@ -24,3 +24,4 @@ export {
   type SpringName,
 } from './motion'
 export { applyTheme, useAppliedTheme } from './theme'
+export { useFocusTrap, type FocusTrapOptions } from './useFocusTrap'
