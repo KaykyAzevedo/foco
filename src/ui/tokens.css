@@ -1,0 +1,288 @@
+/* ==========================================================================
+   Foco — tokens de design (liquid glass)
+   Tema: claro por padrão; escuro via prefers-color-scheme ou [data-theme="dark"].
+   Forçar claro: [data-theme="light"] no <html>. Ver ui/theme.ts.
+   ========================================================================== */
+
+:root {
+  color-scheme: light dark;
+
+  /* Tipografia — SF quando disponível, depois Inter / Segoe UI Variable */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Inter',
+    'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter',
+    'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  --font-rounded: ui-rounded, 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'Inter',
+    'Segoe UI Variable Display', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.1875rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.75rem;
+  --tracking-tight: -0.022em;
+  --tracking-display: -0.032em;
+
+  /* Raios */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-full: 999px;
+
+  /* Espaçamento base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Vidro */
+  --blur-thin: 14px;
+  --blur: 24px;
+  --blur-thick: 40px;
+  --glass-saturate: 180%;
+
+  /* Acento (índigo iOS) */
+  --accent: #5856d6;
+  --accent-strong: #4542c2;
+  --accent-2: #af52de;
+  --accent-ink: #ffffff;
+  --accent-soft: rgb(88 86 214 / 0.14);
+  --accent-gradient: linear-gradient(135deg, #6e6cf0 0%, #5856d6 45%, #8b5cf6 100%);
+  --focus-ring: rgb(88 86 214 / 0.55);
+
+  /* Urgência — calmo → atenção → urgente → atrasada. Nada de vermelho piscando. */
+  --calm: #2fbf95;
+  --calm-ink: #0a6b50;
+  --calm-soft: rgb(47 191 149 / 0.16);
+  --soon: #f5a623;
+  --soon-ink: #845000;
+  --soon-soft: rgb(245 166 35 / 0.18);
+  --urgent: #ff7a45;
+  --urgent-ink: #a8380a;
+  --urgent-soft: rgb(255 122 69 / 0.17);
+  --overdue: #e2477c;
+  --overdue-ink: #a3164b;
+  --overdue-soft: rgb(226 71 124 / 0.15);
+  --boss: #8b5cf6;
+  --boss-ink: #5b2bc4;
+  --boss-soft: rgb(139 92 246 / 0.15);
+  --xp: #ffb800;
+  --xp-2: #ff8a00;
+
+  /* Superfícies e texto */
+  --bg: #eef0f8;
+  --text: #0c0c16;
+  --text-2: rgb(28 28 48 / 0.66);
+  --text-3: rgb(28 28 48 / 0.46);
+  --separator: rgb(20 20 50 / 0.1);
+
+  --glass-bg: rgb(255 255 255 / 0.52);
+  --glass-bg-thin: rgb(255 255 255 / 0.34);
+  --glass-bg-thick: rgb(255 255 255 / 0.72);
+  --glass-hover: rgb(255 255 255 / 0.66);
+  --glass-border: rgb(255 255 255 / 0.75);
+  --glass-edge-dim: rgb(255 255 255 / 0.18);
+  --glass-specular: rgb(255 255 255 / 0.9);
+  --glass-inner-shadow: rgb(255 255 255 / 0.55);
+  --glass-tint: transparent;
+
+  --shadow-sm: 0 1px 2px rgb(20 20 60 / 0.06), 0 2px 8px rgb(20 20 60 / 0.06);
+  --shadow-md: 0 2px 6px rgb(20 20 60 / 0.06), 0 10px 30px rgb(20 20 60 / 0.1);
+  --shadow-lg: 0 4px 12px rgb(20 20 60 / 0.08), 0 24px 60px rgb(20 20 60 / 0.16);
+
+  --scrim: rgb(10 10 25 / 0.28);
+
+  /* Fundo mesh */
+  --mesh-base: #eef0f8;
+  --mesh-1: #c9c3ff;
+  --mesh-2: #ffd3e2;
+  --mesh-3: #bfe7ff;
+  --mesh-4: #d6ffe9;
+  --mesh-5: #ffe6c4;
+  --mesh-opacity: 0.85;
+  --grain-opacity: 0.05;
+
+  /* Movimento (CSS). Springs JS ficam em ui/motion.ts */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 140ms;
+  --dur: 240ms;
+  --dur-slow: 420ms;
+
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+/* ---------- Escuro ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --accent: #7d7aff;
+    --accent-strong: #9a98ff;
+    --accent-2: #c77dff;
+    --accent-soft: rgb(125 122 255 / 0.2);
+    --accent-gradient: linear-gradient(135deg, #6764ec 0%, #5350d6 50%, #7743dc 100%);
+    --focus-ring: rgb(154 152 255 / 0.7);
+
+    --calm: #3ddbae;
+    --calm-ink: #6cf0c9;
+    --calm-soft: rgb(61 219 174 / 0.16);
+    --soon: #ffbd45;
+    --soon-ink: #ffcf73;
+    --soon-soft: rgb(255 189 69 / 0.16);
+    --urgent: #ff8a5c;
+    --urgent-ink: #ffa682;
+    --urgent-soft: rgb(255 138 92 / 0.17);
+    --overdue: #ff6b9b;
+    --overdue-ink: #ff94b8;
+    --overdue-soft: rgb(255 107 155 / 0.16);
+    --boss: #a98bff;
+    --boss-ink: #c4b0ff;
+    --boss-soft: rgb(169 139 255 / 0.17);
+
+    --bg: #07070e;
+    --text: #f4f4fb;
+    --text-2: rgb(235 235 250 / 0.68);
+    --text-3: rgb(235 235 250 / 0.46);
+    --separator: rgb(255 255 255 / 0.1);
+
+    --glass-bg: rgb(40 40 58 / 0.42);
+    --glass-bg-thin: rgb(40 40 58 / 0.26);
+    --glass-bg-thick: rgb(34 34 50 / 0.7);
+    --glass-hover: rgb(60 60 84 / 0.5);
+    --glass-border: rgb(255 255 255 / 0.2);
+    --glass-edge-dim: rgb(255 255 255 / 0.04);
+    --glass-specular: rgb(255 255 255 / 0.35);
+    --glass-inner-shadow: rgb(255 255 255 / 0.1);
+
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 8px rgb(0 0 0 / 0.2);
+    --shadow-md: 0 2px 6px rgb(0 0 0 / 0.3), 0 12px 32px rgb(0 0 0 / 0.35);
+    --shadow-lg: 0 4px 12px rgb(0 0 0 / 0.35), 0 28px 70px rgb(0 0 0 / 0.5);
+
+    --scrim: rgb(0 0 0 / 0.5);
+
+    --mesh-base: #07070e;
+    --mesh-1: #3b2bb8;
+    --mesh-2: #8a1f6a;
+    --mesh-3: #0d5e8f;
+    --mesh-4: #0b6b55;
+    --mesh-5: #4a2a9a;
+    --mesh-opacity: 0.55;
+    --grain-opacity: 0.07;
+  }
+}
+
+:root[data-theme='dark'] {
+  --accent: #7d7aff;
+  --accent-strong: #9a98ff;
+  --accent-2: #c77dff;
+  --accent-soft: rgb(125 122 255 / 0.2);
+  --accent-gradient: linear-gradient(135deg, #6764ec 0%, #5350d6 50%, #7743dc 100%);
+  --focus-ring: rgb(154 152 255 / 0.7);
+
+  --calm: #3ddbae;
+  --calm-ink: #6cf0c9;
+  --calm-soft: rgb(61 219 174 / 0.16);
+  --soon: #ffbd45;
+  --soon-ink: #ffcf73;
+  --soon-soft: rgb(255 189 69 / 0.16);
+  --urgent: #ff8a5c;
+  --urgent-ink: #ffa682;
+  --urgent-soft: rgb(255 138 92 / 0.17);
+  --overdue: #ff6b9b;
+  --overdue-ink: #ff94b8;
+  --overdue-soft: rgb(255 107 155 / 0.16);
+  --boss: #a98bff;
+  --boss-ink: #c4b0ff;
+  --boss-soft: rgb(169 139 255 / 0.17);
+
+  --bg: #07070e;
+  --text: #f4f4fb;
+  --text-2: rgb(235 235 250 / 0.68);
+  --text-3: rgb(235 235 250 / 0.46);
+  --separator: rgb(255 255 255 / 0.1);
+
+  --glass-bg: rgb(40 40 58 / 0.42);
+  --glass-bg-thin: rgb(40 40 58 / 0.26);
+  --glass-bg-thick: rgb(34 34 50 / 0.7);
+  --glass-hover: rgb(60 60 84 / 0.5);
+  --glass-border: rgb(255 255 255 / 0.2);
+  --glass-edge-dim: rgb(255 255 255 / 0.04);
+  --glass-specular: rgb(255 255 255 / 0.35);
+  --glass-inner-shadow: rgb(255 255 255 / 0.1);
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 8px rgb(0 0 0 / 0.2);
+  --shadow-md: 0 2px 6px rgb(0 0 0 / 0.3), 0 12px 32px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 4px 12px rgb(0 0 0 / 0.35), 0 28px 70px rgb(0 0 0 / 0.5);
+
+  --scrim: rgb(0 0 0 / 0.5);
+
+  --mesh-base: #07070e;
+  --mesh-1: #3b2bb8;
+  --mesh-2: #8a1f6a;
+  --mesh-3: #0d5e8f;
+  --mesh-4: #0b6b55;
+  --mesh-5: #4a2a9a;
+  --mesh-opacity: 0.55;
+  --grain-opacity: 0.07;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* ---------- Ponte para utilitários Tailwind (bg-calm, text-text-2, rounded-lg, font-display…) ---------- */
+/* fontes e raios usam os mesmos nomes do Tailwind (--font-sans, --radius-lg…): os valores
+   acima, fora de @layer, já sobrescrevem os padrões — então font-sans/rounded-lg funcionam. */
+@theme inline {
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-calm: var(--calm);
+  --color-calm-ink: var(--calm-ink);
+  --color-calm-soft: var(--calm-soft);
+  --color-soon: var(--soon);
+  --color-soon-ink: var(--soon-ink);
+  --color-soon-soft: var(--soon-soft);
+  --color-urgent: var(--urgent);
+  --color-urgent-ink: var(--urgent-ink);
+  --color-urgent-soft: var(--urgent-soft);
+  --color-overdue: var(--overdue);
+  --color-overdue-ink: var(--overdue-ink);
+  --color-overdue-soft: var(--overdue-soft);
+  --color-boss: var(--boss);
+  --color-boss-ink: var(--boss-ink);
+  --color-boss-soft: var(--boss-soft);
+  --color-xp: var(--xp);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-separator: var(--separator);
+  --color-glass: var(--glass-bg);
+
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  --font-rounded: ui-rounded, 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+  --shadow-glass-sm: var(--shadow-sm);
+  --shadow-glass: var(--shadow-md);
+  --shadow-glass-lg: var(--shadow-lg);
+}
+
+/* Variante dark: do Tailwind segue o mesmo critério dos tokens */
+@custom-variant dark {
+  &:where([data-theme='dark'], [data-theme='dark'] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme='light']), :root:not([data-theme='light']) *) {
+      @slot;
+    }
+  }
+}
