@@ -9,7 +9,6 @@ export { Sheet, type SheetProps } from './Sheet'
 export { TabBar, type TabBarProps, type TabItem } from './TabBar'
 export { ProgressRing, type ProgressRingProps, type RingTone } from './ProgressRing'
 export { Countdown, type CountdownProps } from './Countdown'
-export { formatCountdown, formatDueFull, urgencyFromDue, type Urgency } from './countdown-format'
 export { XPOrb, type XPOrbProps } from './XPOrb'
 export { toast, useToast, Toaster, type ToastOptions, type ToastTone } from './Toast'
 export { Checkbox, type CheckboxProps } from './Checkbox'
@@ -24,4 +23,4 @@ export {
   pressScale,
   type SpringName,
 } from './motion'
-export { useTheme, applyTheme, readTheme, type ThemePreference } from './theme'
+export { applyTheme, useAppliedTheme } from './theme'

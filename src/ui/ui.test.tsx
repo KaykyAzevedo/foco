@@ -1,35 +1,18 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { Button, Checkbox, Chip, Countdown, ProgressRing, Sheet, TabBar, Toaster, formatCountdown, toast, urgencyFromDue } from './index'
+import { XPOrb } from './XPOrb'
+import { Button, Checkbox, Chip, Countdown, ProgressRing, Sheet, TabBar, Toaster, toast } from './index'
 
 const NOW = new Date('2026-10-02T12:00:00')
 const at = (ms: number) => new Date(NOW.getTime() + ms)
 const MIN = 60_000
 const H = 60 * MIN
 
-describe('formatCountdown / urgencyFromDue', () => {
-  it('formata prazos futuros e passados em PT-BR sem culpa', () => {
-    expect(formatCountdown(at(20 * MIN), NOW)).toBe('em 20 min')
-    expect(formatCountdown(at(2 * H + 15 * MIN), NOW)).toBe('em 2h 15min')
-    expect(formatCountdown(at(3 * H), NOW)).toBe('em 3h')
-    expect(formatCountdown(at(3 * 24 * H), NOW)).toBe('em 3 dias')
-    expect(formatCountdown(at(-25 * MIN), NOW)).toBe('passou há 25 min')
-    expect(formatCountdown(at(-26 * H), NOW)).toBe('passou há 1 dia')
-    expect(formatCountdown(at(20_000), NOW)).toBe('vence agora')
-  })
-
-  it('classifica urgência', () => {
-    expect(urgencyFromDue(at(-1), NOW)).toBe('overdue')
-    expect(urgencyFromDue(at(90 * MIN), NOW)).toBe('urgent')
-    expect(urgencyFromDue(at(5 * H), NOW)).toBe('soon')
-    expect(urgencyFromDue(at(30 * H), NOW)).toBe('calm')
-  })
-})
-
 describe('Countdown', () => {
   it('usa a urgência informada pelo domínio quando passada', () => {
     const { container } = render(<Countdown due={at(30 * H).toISOString()} urgency="urgent" now={NOW} />)
     expect(container.querySelector('.ui-countdown')).toHaveAttribute('data-urgency', 'urgent')
     expect(screen.getByText('em 1 dia')).toBeInTheDocument()
+    expect(container.querySelector('time')).toHaveAttribute('dateTime', at(30 * H).toISOString())
   })
 })
 
@@ -124,5 +107,18 @@ describe('toast', () => {
     })
     expect(screen.getByRole('status')).toHaveTextContent('Capturado ✓')
     act(() => toast.clear())
+  })
+})
+
+describe('XPOrb', () => {
+  it('anuncia ganho de XP por padrão e silencia com announce={false}', () => {
+    const { container, rerender } = render(<XPOrb level={1} xp={10} />)
+    rerender(<XPOrb level={1} xp={40} />)
+    expect(container.querySelector('[aria-live]')).toHaveTextContent('+30 XP')
+
+    const quiet = render(<XPOrb level={1} xp={10} announce={false} />)
+    quiet.rerender(<XPOrb level={1} xp={40} announce={false} />)
+    expect(quiet.container.querySelector('[aria-live]')).toBeNull()
+    expect(quiet.container.querySelector('.ui-xporb-gain')).toHaveTextContent('+30 XP')
   })
 })

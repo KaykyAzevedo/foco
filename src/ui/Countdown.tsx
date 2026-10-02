@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import clsx from 'clsx'
-import { formatCountdown, formatDueFull, toDate, urgencyFromDue, type Urgency } from './countdown-format'
+import { formatCountdown, formatDue, type Urgency } from '@/domain'
 import { springs } from './motion'
 
 export interface CountdownProps {
   /** Prazo (ISO string ou Date). */
   due: string | Date
-  /** Urgência vinda do domínio (`urgencyOf`). Se omitida, é calculada pelo prazo. */
-  urgency?: Urgency
+  /** Urgência vinda do domínio: urgencyOf(task, now). Define a cor. */
+  urgency: Urgency
   /** 'pill' (fundo colorido) ou 'inline' (só bolinha + texto). Padrão: 'pill'. */
   variant?: 'pill' | 'inline'
   size?: 'md' | 'lg'
@@ -45,12 +45,12 @@ function useNow(fixed: Date | undefined, due: Date): Date {
 
 /** Contagem regressiva colorida por urgência: calmo → atenção → urgente → passou. Sem piscar. */
 export function Countdown({ due, urgency, variant = 'pill', size = 'md', now: fixedNow, className }: CountdownProps) {
-  const dueDate = toDate(due)
+  const dueDate = due instanceof Date ? due : new Date(due)
   const dueMs = dueDate.getTime()
   // estabiliza a dependência do efeito por valor (não por identidade)
   const [stableDue] = useStableDate(dueMs)
   const now = useNow(fixedNow, stableDue)
-  const u = urgency ?? urgencyFromDue(dueDate, now)
+  const u = urgency
   const text = formatCountdown(dueDate, now)
 
   return (
@@ -59,7 +59,7 @@ export function Countdown({ due, urgency, variant = 'pill', size = 'md', now: fi
       data-urgency={u}
       data-variant={variant}
       data-size={size}
-      title={formatDueFull(dueDate)}
+      title={`Prazo: ${formatDue(dueDate, now)}`}
     >
       <span className="ui-countdown-dot" aria-hidden />
       <span className="ui-sr-only">{SR_PREFIX[u]}: </span>

@@ -110,7 +110,7 @@ describe('morningSummary', () => {
       makeTask({ due: at(2026, 10, 1, 17) }),
     ]
     expect(morningSummary(tasks, NOW).text).toBe(
-      'Hoje você tem 2 prazos (o primeiro às 11h30). 1 tarefa ficou pra trás — dá pra reagendar com 1 toque.',
+      'Hoje você tem 2 prazos (o primeiro às 11h30). 1 tarefa passou do prazo — dá pra reagendar com 1 toque.',
     )
   })
 
@@ -120,7 +120,7 @@ describe('morningSummary', () => {
 
   it('só atrasadas', () => {
     const tasks = [makeTask({ due: at(2026, 9, 30) }), makeTask({ due: at(2026, 9, 29) })]
-    expect(morningSummary(tasks, NOW).text).toBe('2 tarefas ficaram pra trás — dá pra reagendar com 1 toque.')
+    expect(morningSummary(tasks, NOW).text).toBe('2 tarefas passaram do prazo — dá pra reagendar com 1 toque.')
   })
 })
 
@@ -132,8 +132,8 @@ describe('format', () => {
     expect(formatCountdown(at(2026, 10, 5, 10), NOW)).toBe('em 3 dias')
     expect(formatCountdown(at(2026, 10, 3, 11), NOW)).toBe('em 1 dia')
     expect(formatCountdown(NOW, NOW)).toBe('agora')
-    expect(formatCountdown(at(2026, 10, 2, 9, 40), NOW)).toBe('atrasada há 20 min')
-    expect(formatCountdown(at(2026, 9, 30, 9), NOW)).toBe('atrasada há 2 dias')
+    expect(formatCountdown(at(2026, 10, 2, 9, 40), NOW)).toBe('passou há 20 min')
+    expect(formatCountdown(at(2026, 9, 30, 9), NOW)).toBe('passou há 2 dias')
   })
 
   it('formatDue', () => {

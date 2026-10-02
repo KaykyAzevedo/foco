@@ -10,8 +10,21 @@ export function prefersReducedMotion(): boolean {
 
 const COLORS = ['#7c9cff', '#a78bfa', '#5eead4', '#fbbf24', '#f472b6']
 
+let canvasOk: boolean | undefined
+/** Ambientes sem canvas 2D (jsdom nos testes) não soltam confete. */
+function canDraw(): boolean {
+  if (canvasOk === undefined) {
+    try {
+      canvasOk = !!document.createElement('canvas').getContext('2d')
+    } catch {
+      canvasOk = false
+    }
+  }
+  return canvasOk
+}
+
 export function celebrate(kind: CelebrationKind = 'small'): void {
-  if (typeof window === 'undefined' || prefersReducedMotion()) return
+  if (typeof window === 'undefined' || prefersReducedMotion() || !canDraw()) return
   const base = { colors: COLORS, disableForReducedMotion: true, zIndex: 9999 }
   switch (kind) {
     case 'small':

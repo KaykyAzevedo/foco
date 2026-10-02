@@ -16,8 +16,9 @@ import {
   fadeUp,
   stagger,
   toast,
-  useTheme,
 } from './index'
+import { useSettings } from '@/store'
+import { useAppliedTheme } from './theme'
 
 /** Vitrine do design system — para validação visual. Não é uma tela do app. */
 export default function Showcase() {
@@ -44,7 +45,8 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 const row = { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' } as const
 
 function ShowcaseContent() {
-  const { resolved, setPreference } = useTheme()
+  const resolved = useAppliedTheme()
+  const setTheme = useSettings((s) => s.setTheme)
   const [tab, setTab] = useState<'agora' | 'hoje' | 'caixa'>('agora')
   const [sheet, setSheet] = useState(false)
   const [focus, setFocus] = useState(false)
@@ -85,7 +87,7 @@ function ShowcaseContent() {
               iconOnly
               aria-label={resolved === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'}
               icon={resolved === 'dark' ? <Sun aria-hidden /> : <Moon aria-hidden />}
-              onClick={() => setPreference(resolved === 'dark' ? 'light' : 'dark')}
+              onClick={() => setTheme(resolved === 'dark' ? 'light' : 'dark')}
             />
           </div>
         </motion.header>
@@ -93,7 +95,7 @@ function ShowcaseContent() {
         <Section title="Agora — card principal">
           <Glass intensity="regular" radius="xl" style={{ padding: 24, display: 'grid', gap: 16 }}>
             <div style={row}>
-              <Countdown due={iso(1.25 * H)} />
+              <Countdown due={iso(1.25 * H)} urgency="urgent" />
               <Chip tone="boss" size="sm" icon={<Briefcase aria-hidden />}>
                 Pedido da chefe
               </Chip>
@@ -164,14 +166,14 @@ function ShowcaseContent() {
 
         <Section title="Contagem regressiva">
           <div style={row}>
-            <Countdown due={iso(3 * 24 * H)} />
-            <Countdown due={iso(5 * H)} />
-            <Countdown due={iso(40 * 60_000)} />
-            <Countdown due={iso(-25 * 60_000)} />
+            <Countdown due={iso(3 * 24 * H)} urgency="calm" />
+            <Countdown due={iso(5 * H)} urgency="soon" />
+            <Countdown due={iso(40 * 60_000)} urgency="urgent" />
+            <Countdown due={iso(-25 * 60_000)} urgency="overdue" />
           </div>
           <div style={row}>
-            <Countdown due={iso(2.5 * H)} variant="inline" />
-            <Countdown due={iso(90 * 60_000)} size="lg" />
+            <Countdown due={iso(2.5 * H)} urgency="soon" variant="inline" />
+            <Countdown due={iso(90 * 60_000)} urgency="urgent" size="lg" />
           </div>
         </Section>
 

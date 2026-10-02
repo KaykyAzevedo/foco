@@ -231,7 +231,7 @@ export const MISSIONS: readonly MissionDef[] = [
   },
   {
     id: 'clear-overdue',
-    title: 'Resolva 1 tarefa atrasada',
+    title: 'Resolva 1 tarefa que passou do prazo',
     target: 1,
     rewardXp: 15,
     measure: (c) => doneToday(c).filter((t) => t.due && toDate(t.doneAt!) > toDate(t.due)).length,
@@ -297,7 +297,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   {
     id: 'week-no-overdue',
     title: 'Semana sem atraso',
-    description: '5+ prazos cumpridos em 7 dias, nenhum atrasado.',
+    description: '5+ prazos cumpridos em 7 dias, todos no prazo.',
     icon: '⏰',
     check: (c) => {
       const since = addDaysKey(dayKey(c.now), -6)

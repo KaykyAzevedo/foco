@@ -15,6 +15,11 @@ export interface XPOrbProps {
   onClick?: () => void
   /** Diâmetro total em px. Padrão: 48. */
   size?: number
+  /**
+   * Anuncia ganhos/subida de nível ao leitor de tela (live region). Padrão: true.
+   * Passe false quando outro aviso (ex.: toast) já anuncia o XP, para não repetir. A animação continua.
+   */
+  announce?: boolean
   className?: string
 }
 
@@ -22,7 +27,7 @@ export interface XPOrbProps {
  * Orb dourado de XP com anel de progresso do nível.
  * Detecta sozinho ganhos de XP (mostra "+N") e subida de nível (pulso + "Nível N!").
  */
-export function XPOrb({ level, xp, xpToNext = 100, onClick, size = 48, className }: XPOrbProps) {
+export function XPOrb({ level, xp, xpToNext = 100, onClick, size = 48, announce = true, className }: XPOrbProps) {
   const reduced = useReducedMotion()
   const controls = useAnimationControls()
   const prev = useRef({ level, xp })
@@ -100,9 +105,11 @@ export function XPOrb({ level, xp, xpToNext = 100, onClick, size = 48, className
           </motion.span>
         )}
       </AnimatePresence>
-      <span className="ui-sr-only" aria-live="polite">
-        {gain?.text ?? ''}
-      </span>
+      {announce && (
+        <span className="ui-sr-only" aria-live="polite">
+          {gain?.text ?? ''}
+        </span>
+      )}
     </motion.button>
   )
 }

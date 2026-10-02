@@ -105,7 +105,7 @@ if (reward) {
 
 ## `useSettings`
 
-`theme: 'system'|'light'|'dark'`, `sound`, `notifications`, `focusMinutes` (padrão 25; `FOCUS_OPTIONS = [10,15,25,45]`),
+`theme: 'system'|'light'|'dark'` (**fonte única de verdade do tema** — o `useAppliedTheme()` de `@/ui` só lê; para trocar o tema chame `setTheme`), `sound`, `notifications`, `focusMinutes` (padrão 25; `FOCUS_OPTIONS = [10,15,25,45]`),
 `lastMorningSummary?: DayKey`.
 Ações: `setTheme`, `setSound`, `setNotifications`, `setFocusMinutes`, `markMorningSummary(day)`, `update(patch)`, `reset()`.
 
@@ -144,7 +144,7 @@ Reconhece (sem diferenciar maiúsculas/acentos):
 `planningCandidates(tasks, now)`, `isDayPlanned(tasks, now)`, `morningSummary(tasks, now)`, `MAX_MAIN = 3`.
 
 ### Formatação — `format.ts`
-- `formatCountdown(due, now)` → "em 45 min", "em 2h 10min", "em 3 dias", "agora", "atrasada há 20 min"
+- `formatCountdown(due, now)` → "em 45 min", "em 2h 10min", "em 3 dias", "agora", "passou há 20 min" (tom sem culpa — fonte única do Countdown)
 - `formatDue(due, now)` → "hoje 15h", "amanhã 9h30", "ontem 18h", "terça 18h", "20/10 18h" (23:59 = sem hora)
 - `formatHour(d)` → "15h", "8h05" · `formatEstimate(min)` → "15 min", "1h 30min"
 

@@ -10,7 +10,7 @@ function hm(ms: number): string {
 
 /**
  * Contagem regressiva curta: "em 45 min", "em 2h 10min", "em 3 dias",
- * "agora", "atrasada há 20 min", "atrasada há 2 dias".
+ * "agora", "passou há 20 min", "passou há 2 dias" (tom sem culpa).
  */
 export function formatCountdown(due: string | Date, now: Date): string {
   const ms = toDate(due).getTime() - now.getTime()
@@ -23,7 +23,7 @@ export function formatCountdown(due: string | Date, now: Date): string {
     const d = Math.floor(abs / DAY)
     span = `${d} ${d === 1 ? 'dia' : 'dias'}`
   }
-  return ms < 0 ? `atrasada há ${span}` : `em ${span}`
+  return ms < 0 ? `passou há ${span}` : `em ${span}`
 }
 
 /** Horário compacto: "15h", "15h30". */

@@ -130,7 +130,7 @@ export function morningSummary(tasks: readonly Task[], now: Date): MorningSummar
   if (parts.length === 0 && overdue === 0) text = 'Dia livre de prazos. Que tal escolher 1 coisa importante?'
   else {
     text = parts.length ? `Hoje você tem ${joinPt(parts)}.` : ''
-    if (overdue) text += `${text ? ' ' : ''}${plural(overdue, 'tarefa ficou', 'tarefas ficaram')} pra trás — dá pra reagendar com 1 toque.`
+    if (overdue) text += `${text ? ' ' : ''}${plural(overdue, 'tarefa passou', 'tarefas passaram')} do prazo — dá pra reagendar com 1 toque.`
   }
   return { fromBoss, dueToday, overdue, nextDue, text }
 }
