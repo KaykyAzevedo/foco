@@ -1,4 +1,5 @@
-import { useReducedMotion, type Transition, type Variants } from 'motion/react'
+import type { Transition, Variants } from 'motion/react'
+import { useMotionReduced } from './reducedMotion'
 
 /**
  * Springs padronizados do Foco. Use sempre estes, nunca durações soltas.
@@ -24,7 +25,7 @@ export const fade: Transition = { duration: 0.2, ease: [0.22, 1, 0.36, 1] }
 
 /** Devolve a spring pedida, ou um fade curto se `prefers-reduced-motion` estiver ativo. */
 export function useSpringTransition(name: SpringName = 'smooth'): Transition {
-  const reduced = useReducedMotion()
+  const reduced = useMotionReduced()
   return reduced ? fade : springs[name]
 }
 

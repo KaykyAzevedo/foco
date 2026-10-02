@@ -1,11 +1,25 @@
-// Celebrações com canvas-confetti. Respeita prefers-reduced-motion.
+// Celebrações com canvas-confetti. Respeita "Reduzir animações" (ajuste) e prefers-reduced-motion.
 import confetti from 'canvas-confetti'
 import type { Reward } from '@/domain'
+import { useSettings } from '@/store/useSettings'
 
 export type CelebrationKind = 'small' | 'level' | 'achievement' | 'mission' | 'allClear'
 
+/** O sistema pede menos movimento (prefers-reduced-motion)? */
 export function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+}
+
+/**
+ * Reduzir animações: ajuste do app (useSettings.reduceMotion, refletido pelo UIProvider em
+ * <html data-reduce-motion>) OU preferência do sistema.
+ */
+export function shouldReduceMotion(): boolean {
+  return (
+    useSettings.getState().reduceMotion ||
+    (typeof document !== 'undefined' && document.documentElement.hasAttribute('data-reduce-motion')) ||
+    prefersReducedMotion()
+  )
 }
 
 const COLORS = ['#7c9cff', '#a78bfa', '#5eead4', '#fbbf24', '#f472b6']
@@ -24,7 +38,7 @@ function canDraw(): boolean {
 }
 
 export function celebrate(kind: CelebrationKind = 'small'): void {
-  if (typeof window === 'undefined' || prefersReducedMotion() || !canDraw()) return
+  if (typeof window === 'undefined' || shouldReduceMotion() || !canDraw()) return
   const base = { colors: COLORS, disableForReducedMotion: true, zIndex: 9999 }
   switch (kind) {
     case 'small':

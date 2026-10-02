@@ -239,6 +239,13 @@ describe('useGame', () => {
 })
 
 describe('useSettings', () => {
+  it('reduceMotion padrão false (seguir o sistema); dados salvos antigos ganham o padrão', async () => {
+    expect(useSettings.getState().reduceMotion).toBe(false)
+    localStorage.setItem('foco:settings', JSON.stringify({ state: { theme: 'dark', sound: true }, version: 1 }))
+    await useSettings.persist.rehydrate()
+    expect(useSettings.getState()).toMatchObject({ theme: 'dark', sound: true, reduceMotion: false, focusMinutes: 25 })
+  })
+
   it('padrões e setters', () => {
     expect(useSettings.getState()).toMatchObject(DEFAULT_SETTINGS)
     const s = useSettings.getState()
@@ -246,12 +253,14 @@ describe('useSettings', () => {
     s.setSound(true)
     s.setNotifications(true)
     s.setFocusMinutes(45)
+    s.setReduceMotion(true)
     s.markMorningSummary('2026-10-02')
     expect(useSettings.getState()).toMatchObject({
       theme: 'dark',
       sound: true,
       notifications: true,
       focusMinutes: 45,
+      reduceMotion: true,
       lastMorningSummary: '2026-10-02',
     })
     expect(JSON.parse(localStorage.getItem('foco:settings')!).state.theme).toBe('dark')

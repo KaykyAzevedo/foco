@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useAnimationControls, useReducedMotion } from 'motion/react'
+import { AnimatePresence, motion, useAnimationControls } from 'motion/react'
+import { useMotionReduced } from './reducedMotion'
 import clsx from 'clsx'
 import { ProgressRing } from './ProgressRing'
 import { springs } from './motion'
@@ -28,7 +29,7 @@ export interface XPOrbProps {
  * Detecta sozinho ganhos de XP (mostra "+N") e subida de nível (pulso + "Nível N!").
  */
 export function XPOrb({ level, xp, xpToNext = 100, onClick, size = 48, announce = true, className }: XPOrbProps) {
-  const reduced = useReducedMotion()
+  const reduced = useMotionReduced()
   const controls = useAnimationControls()
   const prev = useRef({ level, xp })
   const [gain, setGain] = useState<{ key: number; text: string } | null>(null)

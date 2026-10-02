@@ -16,7 +16,7 @@ import {
   restoreBackup,
   serializeBackup,
 } from './backup'
-import { celebrationFor } from './confetti'
+import { celebrationFor, shouldReduceMotion } from './confetti'
 import { dueReminders, notify, remindersFor, startReminderLoop } from './notifications'
 
 describe('notifications', () => {
@@ -65,6 +65,23 @@ describe('notifications', () => {
 })
 
 describe('confetti', () => {
+  it('shouldReduceMotion: ajuste do app OU sistema', () => {
+    const mm = vi.fn().mockReturnValue({ matches: false })
+    vi.stubGlobal('matchMedia', mm)
+    useSettings.getState().setReduceMotion(false)
+    expect(shouldReduceMotion()).toBe(false)
+    useSettings.getState().setReduceMotion(true)
+    expect(shouldReduceMotion()).toBe(true)
+    useSettings.getState().setReduceMotion(false)
+    document.documentElement.setAttribute('data-reduce-motion', '')
+    expect(shouldReduceMotion()).toBe(true)
+    document.documentElement.removeAttribute('data-reduce-motion')
+    expect(shouldReduceMotion()).toBe(false)
+    mm.mockReturnValue({ matches: true })
+    expect(shouldReduceMotion()).toBe(true)
+    vi.unstubAllGlobals()
+  })
+
   const base: Reward = {
     kind: 'task', xp: 10, breakdown: [], combo: 1, comboMultiplier: 1, streak: 1, shieldUsed: false,
     levelBefore: 1, levelAfter: 1, leveledUp: false, unlocked: [], repeat: false, at: NOW.toISOString(),
@@ -129,7 +146,7 @@ describe('backup', () => {
     expect(r.backup.tasks).toHaveLength(1)
     expect(r.backup.tasks[0]).toMatchObject({ id: 'ok', due: undefined, urgent: false, fromBoss: false })
     expect(r.backup.tasks[0].steps).toEqual([{ id: 'step-0', title: 'p', done: false, rewarded: undefined }])
-    expect(r.backup.settings).toMatchObject({ theme: 'system', focusMinutes: 15 })
+    expect(r.backup.settings).toMatchObject({ theme: 'system', focusMinutes: 15, reduceMotion: false })
     expect(r.backup.game.xp).toBe(0)
   })
 

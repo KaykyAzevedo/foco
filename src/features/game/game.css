@@ -299,3 +299,6 @@
   .game-badge[data-unlocked='true']::after { animation: none; }
   .game-badge[data-unlocked='true']::after { display: none; }
 }
+:root[data-reduce-motion] .game-halo,
+:root[data-reduce-motion] .game-badge[data-unlocked='true']::after { animation: none; }
+:root[data-reduce-motion] .game-badge[data-unlocked='true']::after { display: none; }

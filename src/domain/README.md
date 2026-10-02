@@ -110,9 +110,10 @@ if (reward) {
 
 ## `useSettings`
 
-`theme: 'system'|'light'|'dark'` (**fonte única de verdade do tema** — o `useAppliedTheme()` de `@/ui` só lê; para trocar o tema chame `setTheme`), `sound`, `notifications`, `focusMinutes` (padrão 25; `FOCUS_OPTIONS = [10,15,25,45]`),
+`reduceMotion: boolean` ("Reduzir animações"; `false` = seguir o sistema — use `shouldReduceMotion()` de `@/lib/confetti`
+para decidir: ajuste do app OU `prefers-reduced-motion`; o confete já respeita), `theme: 'system'|'light'|'dark'` (**fonte única de verdade do tema** — o `useAppliedTheme()` de `@/ui` só lê; para trocar o tema chame `setTheme`), `sound`, `notifications`, `focusMinutes` (padrão 25; `FOCUS_OPTIONS = [10,15,25,45]`),
 `lastMorningSummary?: DayKey`.
-Ações: `setTheme`, `setSound`, `setNotifications`, `setFocusMinutes`, `markMorningSummary(day)`, `update(patch)`, `reset()`.
+Ações: `setTheme`, `setSound`, `setNotifications`, `setReduceMotion`, `setFocusMinutes`, `markMorningSummary(day)`, `update(patch)`, `reset()`.
 
 Persistência (localStorage): `foco:tasks`, `foco:game`, `foco:settings` (versão 1).
 

@@ -32,6 +32,19 @@ describe('Shell', () => {
     expect(await screen.findByRole('heading', { name: 'Caixa' })).toBeInTheDocument()
   })
 
+  it('engrenagem no topo abre os Ajustes, sem virar 4ª aba', async () => {
+    render(<App />)
+    expect(screen.getAllByRole('tab')).toHaveLength(3)
+    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }))
+    expect(await screen.findByRole('dialog', { name: 'Ajustes' })).toBeInTheDocument()
+  })
+
+  it('"Reduzir animações" liga o modo reduzido no documento', async () => {
+    render(<App />)
+    act(() => useSettings.getState().setReduceMotion(true))
+    await waitFor(() => expect(document.documentElement).toHaveAttribute('data-reduce-motion'))
+  })
+
   it('mostra o resumo da manhã só uma vez por dia', async () => {
     useSettings.setState({ lastMorningSummary: undefined })
     render(<App />)

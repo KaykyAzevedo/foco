@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { motion } from 'motion/react'
-import { Briefcase, CalendarDays, Clock, Inbox, Moon, Play, SkipForward, Sparkles, Sun, SunMedium, Zap } from 'lucide-react'
+import { Briefcase, CalendarDays, Clock, Inbox, Monitor, Moon, Play, SkipForward, Sparkles, Sun, SunMedium, Zap } from 'lucide-react'
 import {
   AppBackground,
   Button,
@@ -9,6 +9,7 @@ import {
   Countdown,
   Glass,
   ProgressRing,
+  Segmented,
   Sheet,
   TabBar,
   UIProvider,
@@ -47,6 +48,7 @@ const row = { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }
 function ShowcaseContent() {
   const resolved = useAppliedTheme()
   const setTheme = useSettings((s) => s.setTheme)
+  const themePref = useSettings((s) => s.theme)
   const [tab, setTab] = useState<'agora' | 'hoje' | 'caixa'>('agora')
   const [sheet, setSheet] = useState(false)
   const [focus, setFocus] = useState(false)
@@ -161,6 +163,32 @@ function ShowcaseContent() {
             <Chip tone="accent" onRemove={() => toast('Removido')}>
               ~15m
             </Chip>
+          </div>
+        </Section>
+
+        <Section title="Segmented">
+          <Segmented
+            aria-label="Tema"
+            value={themePref}
+            onChange={setTheme}
+            options={[
+              { id: 'system', label: 'Automático', icon: <Monitor /> },
+              { id: 'light', label: 'Claro', icon: <Sun /> },
+              { id: 'dark', label: 'Escuro', icon: <Moon /> },
+            ]}
+          />
+          <div style={{ maxWidth: 260 }}>
+            <Segmented
+              size="sm"
+              aria-label="Duração"
+              value={due ?? 'hoje'}
+              onChange={setDue}
+              options={[
+                { id: 'hoje', label: 'Hoje' },
+                { id: 'amanha', label: 'Amanhã' },
+                { id: 'sexta', label: 'Sexta' },
+              ]}
+            />
           </div>
         </Section>
 

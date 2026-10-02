@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { XPOrb } from './XPOrb'
+import { Segmented } from './Segmented'
 import { Button, Checkbox, Chip, Countdown, ProgressRing, Sheet, TabBar, Toaster, toast } from './index'
 
 const NOW = new Date('2026-10-02T12:00:00')
@@ -17,7 +18,7 @@ describe('Countdown', () => {
 })
 
 describe('Button', () => {
-  it('fica desativado e ocupado ao carregar', () => {
+  it('carregando: ignora clique, fica ocupado e mantém o foco', () => {
     const onClick = vi.fn()
     render(
       <Button loading onClick={onClick}>
@@ -25,8 +26,14 @@ describe('Button', () => {
       </Button>,
     )
     const btn = screen.getByRole('button', { name: 'Salvar' })
-    expect(btn).toBeDisabled()
+    // continua focável (sem disabled nativo), mas inativo para tecnologia assistiva e cliques
+    expect(btn).not.toBeDisabled()
+    expect(btn).toHaveAttribute('aria-disabled', 'true')
     expect(btn).toHaveAttribute('aria-busy', 'true')
+    btn.focus()
+    expect(btn).toHaveFocus()
+    fireEvent.click(btn)
+    expect(onClick).not.toHaveBeenCalled()
   })
 })
 
@@ -120,5 +127,54 @@ describe('XPOrb', () => {
     quiet.rerender(<XPOrb level={1} xp={40} announce={false} />)
     expect(quiet.container.querySelector('[aria-live]')).toBeNull()
     expect(quiet.container.querySelector('.ui-xporb-gain')).toHaveTextContent('+30 XP')
+  })
+})
+
+describe('UIProvider reducedMotion', () => {
+  it('"always" liga <html data-reduce-motion> e reduz o movimento efetivo', async () => {
+    const { UIProvider, useMotionReduced } = await import('./index')
+    let seen: boolean | undefined
+    function Probe() {
+      seen = useMotionReduced()
+      return null
+    }
+    const { rerender } = render(
+      <UIProvider reducedMotion="always">
+        <Probe />
+      </UIProvider>,
+    )
+    expect(document.documentElement.hasAttribute('data-reduce-motion')).toBe(true)
+    expect(seen).toBe(true)
+    rerender(
+      <UIProvider reducedMotion="user">
+        <Probe />
+      </UIProvider>,
+    )
+    expect(document.documentElement.hasAttribute('data-reduce-motion')).toBe(false)
+    expect(seen).toBe(false)
+  })
+})
+
+describe('Segmented', () => {
+  const options = [
+    { id: 'system', label: 'Automático' },
+    { id: 'light', label: 'Claro' },
+    { id: 'dark', label: 'Escuro' },
+  ] as const
+  it('é um radiogroup com roving tabindex e setas', () => {
+    const onChange = vi.fn()
+    render(<Segmented aria-label="Tema" options={[...options]} value="light" onChange={onChange} />)
+    expect(screen.getByRole('radiogroup', { name: 'Tema' })).toBeInTheDocument()
+    const claro = screen.getByRole('radio', { name: 'Claro' })
+    expect(claro).toHaveAttribute('aria-checked', 'true')
+    expect(claro).toHaveAttribute('tabindex', '0')
+    expect(screen.getByRole('radio', { name: 'Escuro' })).toHaveAttribute('tabindex', '-1')
+    fireEvent.keyDown(claro, { key: 'ArrowRight' })
+    expect(onChange).toHaveBeenLastCalledWith('dark')
+    expect(screen.getByRole('radio', { name: 'Escuro' })).toHaveFocus()
+    fireEvent.keyDown(claro, { key: 'ArrowLeft' })
+    expect(onChange).toHaveBeenLastCalledWith('system')
+    fireEvent.click(screen.getByRole('radio', { name: 'Escuro' }))
+    expect(onChange).toHaveBeenLastCalledWith('dark')
   })
 })

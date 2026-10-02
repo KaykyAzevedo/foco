@@ -91,6 +91,7 @@
   --glass-edge-dim: rgb(255 255 255 / 0.18);
   --glass-specular: rgb(255 255 255 / 0.9);
   --glass-inner-shadow: rgb(255 255 255 / 0.55);
+  --segment-indicator: rgb(255 255 255 / 0.92);
   --glass-tint: transparent;
 
   --shadow-sm: 0 1px 2px rgb(20 20 60 / 0.06), 0 2px 8px rgb(20 20 60 / 0.06);
@@ -160,6 +161,7 @@
     --glass-edge-dim: rgb(255 255 255 / 0.04);
     --glass-specular: rgb(255 255 255 / 0.35);
     --glass-inner-shadow: rgb(255 255 255 / 0.1);
+    --segment-indicator: rgb(255 255 255 / 0.17);
 
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 8px rgb(0 0 0 / 0.2);
     --shadow-md: 0 2px 6px rgb(0 0 0 / 0.3), 0 12px 32px rgb(0 0 0 / 0.35);
@@ -218,6 +220,7 @@
   --glass-edge-dim: rgb(255 255 255 / 0.04);
   --glass-specular: rgb(255 255 255 / 0.35);
   --glass-inner-shadow: rgb(255 255 255 / 0.1);
+  --segment-indicator: rgb(255 255 255 / 0.17);
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 8px rgb(0 0 0 / 0.2);
   --shadow-md: 0 2px 6px rgb(0 0 0 / 0.3), 0 12px 32px rgb(0 0 0 / 0.35);

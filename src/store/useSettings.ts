@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   sound: false,
   notifications: false,
+  reduceMotion: false,
   focusMinutes: 25,
 }
 
@@ -15,6 +16,8 @@ export interface SettingsStore extends Settings {
   setTheme(theme: ThemePref): void
   setSound(on: boolean): void
   setNotifications(on: boolean): void
+  /** "Reduzir animações" (false = seguir o sistema). */
+  setReduceMotion(on: boolean): void
   setFocusMinutes(min: number): void
   /** Marca que o resumo da manhã já foi mostrado em `day`. */
   markMorningSummary(day: DayKey): void
@@ -27,6 +30,7 @@ export function settingsData(s: SettingsStore): Settings {
     theme: s.theme,
     sound: s.sound,
     notifications: s.notifications,
+    reduceMotion: s.reduceMotion,
     focusMinutes: s.focusMinutes,
     lastMorningSummary: s.lastMorningSummary,
   }
@@ -39,6 +43,7 @@ export const useSettings = create<SettingsStore>()(
       setTheme: (theme) => set({ theme }),
       setSound: (sound) => set({ sound }),
       setNotifications: (notifications) => set({ notifications }),
+      setReduceMotion: (reduceMotion) => set({ reduceMotion }),
       setFocusMinutes: (min) => set({ focusMinutes: Math.max(1, Math.round(min)) }),
       markMorningSummary: (day) => set({ lastMorningSummary: day }),
       update: (patch) => set(patch),
@@ -49,6 +54,8 @@ export const useSettings = create<SettingsStore>()(
       version: 1,
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => settingsData(s),
+      // dados salvos antes de um campo existir ganham o padrão
+      merge: (persisted, current) => ({ ...current, ...DEFAULT_SETTINGS, ...(persisted as Partial<Settings>) }),
     },
   ),
 )

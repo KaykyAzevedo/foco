@@ -1,5 +1,6 @@
 import { useEffect, useSyncExternalStore, type ReactNode } from 'react'
-import { AnimatePresence, useReducedMotion, type PanInfo } from 'motion/react'
+import { AnimatePresence, type PanInfo } from 'motion/react'
+import { useMotionReduced } from './reducedMotion'
 import { AlertCircle, Check, Sparkles, Zap } from 'lucide-react'
 import { Glass } from './Glass'
 import { Button } from './Button'
@@ -76,7 +77,7 @@ const ICONS: Record<ToastTone, ReactNode> = {
 }
 
 function ToastView({ t }: { t: ToastItem }) {
-  const reduced = useReducedMotion()
+  const reduced = useMotionReduced()
   const duration = t.duration ?? (t.action ? 5000 : 3200)
   useEffect(() => {
     const id = setTimeout(() => dismiss(t.id), duration)

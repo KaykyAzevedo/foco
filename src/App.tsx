@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { Inbox, Sparkles, Sun } from 'lucide-react'
+import { Inbox, Settings, Sparkles, Sun } from 'lucide-react'
 import { startReminderLoop } from '@/lib/notifications'
 import { useGameSummary, useSettings, useTasks } from '@/store'
 import {
   AppBackground,
+  Button,
   TabBar,
   UIProvider,
   useAppliedTheme,
@@ -22,6 +23,7 @@ import { CaptureSheet } from './features/capture/CaptureSheet'
 import { useCaptureShortcut } from './features/capture/useCaptureShortcut'
 import { FocusMode } from './features/focus/FocusMode'
 import { GameSheet } from './features/game/GameSheet'
+import { SettingsSheet } from './features/settings/SettingsSheet'
 
 const TABS: TabItem<Tab>[] = [
   { id: 'now', label: 'Agora', icon: <Sparkles aria-hidden size={20} /> },
@@ -30,8 +32,10 @@ const TABS: TabItem<Tab>[] = [
 ]
 
 export default function App() {
+  // "Reduzir animações" dos Ajustes força o modo reduzido; senão segue o sistema
+  const reduceMotion = useSettings((s) => s.reduceMotion)
   return (
-    <UIProvider>
+    <UIProvider reducedMotion={reduceMotion ? 'always' : 'user'}>
       <Shell />
     </UIProvider>
   )
@@ -63,13 +67,23 @@ function Shell() {
     <div className="min-h-dvh">
       <AppBackground tone={overlay?.kind === 'focus' ? 'focus' : 'default'} />
 
-      <header className="fixed top-[calc(1rem+env(safe-area-inset-top))] right-5 z-30">
+      <header className="pointer-events-none fixed inset-x-0 top-[calc(1rem+env(safe-area-inset-top))] z-30 flex items-center justify-between px-5">
+        <Button
+          variant="ghost"
+          size="sm"
+          iconOnly
+          aria-label="Ajustes"
+          icon={<Settings aria-hidden size={20} />}
+          onClick={() => setOverlay({ kind: 'settings' })}
+          className="pointer-events-auto"
+        />
         <XPOrb
           level={game.level.level}
           xp={game.level.current}
           xpToNext={game.level.needed}
           announce={false} // o toast de recompensa já anuncia o XP
           onClick={() => setOverlay({ kind: 'game' })}
+          className="pointer-events-auto"
         />
       </header>
 
@@ -100,6 +114,7 @@ function Shell() {
       <CaptureSheet open={overlay?.kind === 'capture'} onClose={close} />
       <FocusMode taskId={overlay?.kind === 'focus' ? overlay.taskId : undefined} onClose={close} />
       <GameSheet open={overlay?.kind === 'game'} onClose={close} />
+      <SettingsSheet open={overlay?.kind === 'settings'} onClose={close} />
     </div>
   )
 }

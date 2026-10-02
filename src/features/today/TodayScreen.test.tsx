@@ -59,7 +59,7 @@ describe('Hoje — ritual Planejar meu dia', () => {
     renderToday()
     fireEvent.click(screen.getByRole('button', { name: 'Planejar meu dia' }))
     const title = await screen.findByRole('heading', { name: 'Planejar meu dia' })
-    expect(title).toHaveFocus()
+    await waitFor(() => expect(title).toHaveFocus())
 
     fireEvent.click(screen.getByRole('button', { name: 'Agora não' }))
     await waitFor(() => expect(screen.getByRole('button', { name: 'Planejar meu dia' })).toHaveFocus())

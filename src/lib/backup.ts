@@ -75,6 +75,7 @@ function sanitizeSettings(v: unknown): Settings {
     theme,
     sound: typeof v.sound === 'boolean' ? v.sound : DEFAULT_SETTINGS.sound,
     notifications: typeof v.notifications === 'boolean' ? v.notifications : DEFAULT_SETTINGS.notifications,
+    reduceMotion: typeof v.reduceMotion === 'boolean' ? v.reduceMotion : DEFAULT_SETTINGS.reduceMotion,
     focusMinutes: typeof v.focusMinutes === 'number' && v.focusMinutes > 0 ? v.focusMinutes : DEFAULT_SETTINGS.focusMinutes,
     lastMorningSummary: optStr(v.lastMorningSummary),
   }

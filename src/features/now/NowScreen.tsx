@@ -1,12 +1,12 @@
 // Agora — UMA tarefa, a próxima (nextTask). Ação primária: Começar → Modo Foco.
 // Feito → XP + Desfazer; Pular por agora → fim da fila de hoje, sem punição.
 import { useRef, type RefObject } from 'react'
-import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion/react'
+import { AnimatePresence, motion, type Variants } from 'motion/react'
 import { Check, Crown, Footprints, Play, SkipForward, Timer, Zap } from 'lucide-react'
 import { formatEstimate, nextTask, urgencyOf, type Task } from '@/domain'
 import { useNow } from '@/lib/useNow'
 import { useNextTask, useTasks } from '@/store'
-import { Button, Chip, Countdown, fade, Glass, springs, toast } from '@/ui'
+import { Button, Chip, Countdown, fade, Glass, springs, toast, useMotionReduced } from '@/ui'
 import { announceReward } from '../reward'
 import { useFocusOnMount } from '../shared/useFocusOnMount'
 
@@ -101,7 +101,7 @@ interface CardProps {
 function TaskCard({ task, focusFlag, onStart, onDone, onSkip }: CardProps) {
   const startRef = useFocusOnMount<HTMLButtonElement>(focusFlag)
   const now = useNow()
-  const reduced = useReducedMotion()
+  const reduced = useMotionReduced()
   const urgency = urgencyOf(task, now)
   const nextStep = task.steps.find((s) => !s.done)
 
@@ -175,7 +175,7 @@ const emptyVariants: Variants = {
 const reducedEmptyVariants: Variants = reducedCardVariants
 
 function EmptyState({ focusFlag, onCapture }: { focusFlag: RefObject<boolean>; onCapture: () => void }) {
-  const reduced = useReducedMotion()
+  const reduced = useMotionReduced()
   const captureRef = useFocusOnMount<HTMLButtonElement>(focusFlag)
   return (
     <motion.div

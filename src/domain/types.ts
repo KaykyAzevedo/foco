@@ -175,6 +175,8 @@ export interface Settings {
   theme: ThemePref
   sound: boolean
   notifications: boolean
+  /** "Reduzir animações": true força menos movimento; false = seguir o sistema (prefers-reduced-motion) */
+  reduceMotion: boolean
   /** duração padrão do modo foco (10/15/25/45) */
   focusMinutes: number
   /** último dia em que o resumo da manhã foi mostrado */

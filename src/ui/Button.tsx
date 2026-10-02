@@ -20,7 +20,10 @@ export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'>
   children?: ReactNode
 }
 
-/** Botão com spring ao pressionar. `primary` = ação principal da tela (só uma por tela!). */
+/**
+ * Botão com spring ao pressionar. `primary` = ação principal da tela (só uma por tela!).
+ * `loading`: mostra spinner, aria-busy + aria-disabled e ignora cliques, mas continua focável.
+ */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     variant = 'primary',
@@ -34,6 +37,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     className,
     children,
     type = 'button',
+    onClick,
     ...rest
   },
   ref,
@@ -52,8 +56,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       data-radius={variant === 'glass' ? 'full' : undefined}
       data-intensity={variant === 'glass' ? 'regular' : undefined}
       data-elevation={variant === 'glass' ? 'raised' : undefined}
-      disabled={inactive}
+      // loading NÃO usa disabled nativo: o botão mantém o foco do teclado (ex.: prompt de permissão aberto)
+      disabled={disabled}
+      aria-disabled={loading && !disabled ? true : undefined}
       aria-busy={loading || undefined}
+      onClick={(e) => {
+        if (loading) {
+          e.preventDefault() // também evita submit de formulário
+          return
+        }
+        onClick?.(e)
+      }}
       whileTap={inactive ? undefined : { scale: pressScale }}
       whileHover={inactive ? undefined : { scale: 1.015 }}
       transition={springs.snappy}

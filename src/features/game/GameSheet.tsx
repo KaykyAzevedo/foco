@@ -1,12 +1,12 @@
 // Folha de gamificação (aberta pelo XPOrb): nível, XP, sequência + escudo, combo, missão, conquistas.
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
+import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useTransform } from 'motion/react'
 import { Flame, Lock, Shield, Target, Trophy, X, Zap } from 'lucide-react'
 import { format } from 'date-fns'
 import { COMBO_WINDOW_MS, comboMultiplier, ptBR, type Achievement } from '@/domain'
 import { useNow } from '@/lib/useNow'
 import { useGame, useGameSummary } from '@/store'
-import { Button, Chip, Glass, ProgressRing, Sheet, fadeUp, springs, stagger } from '@/ui'
+import { Button, Chip, Glass, ProgressRing, Sheet, fadeUp, springs, stagger, useMotionReduced } from '@/ui'
 import './game.css'
 
 interface Props {
@@ -25,7 +25,7 @@ function hueOf(id: string): number {
 
 /** Número que sobe com spring ao abrir. */
 function CountUp({ value }: { value: number }) {
-  const reduced = useReducedMotion()
+  const reduced = useMotionReduced()
   const mv = useMotionValue(reduced ? value : 0)
   const shown = useTransform(mv, (v) => Math.round(v).toLocaleString('pt-BR'))
   useEffect(() => {
@@ -55,7 +55,7 @@ function GameContent() {
   const game = useGameSummary()
   const comboLastAt = useGame((s) => s.combo.lastAt)
   const now = useNow(15_000)
-  const reduced = useReducedMotion()
+  const reduced = useMotionReduced()
   const [detail, setDetail] = useState<Badge | null>(null)
   const lastBadge = useRef<HTMLButtonElement | null>(null)
 

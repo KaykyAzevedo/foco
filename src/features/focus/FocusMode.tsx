@@ -2,12 +2,12 @@
 // Aviso gentil após 90 min de foco contínuo. Lógica do timer em ./timer.ts (pura e testada).
 import { useEffect, useReducer, useRef, useState, type FormEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { Check, Coffee, Crown, Pause, Play, Plus, RotateCcw, X } from 'lucide-react'
 import { urgencyOf } from '@/domain'
 import { useNow } from '@/lib/useNow'
 import { FOCUS_OPTIONS, useGame, useSettings, useTasks } from '@/store'
-import { Button, Checkbox, Chip, Countdown, Glass, ProgressRing, fadeUp, springs, stagger, useFocusTrap } from '@/ui'
+import { Button, Checkbox, Chip, Countdown, Glass, ProgressRing, fadeUp, springs, stagger, useFocusTrap, useMotionReduced } from '@/ui'
 import { announceReward } from '../reward'
 import { BREAK_MS, formatClock, formatFocused, initialTimer, spokenRemaining, timerReducer, type Phase } from './timer'
 import './focus.css'
@@ -82,7 +82,7 @@ function FocusScreen({ taskId, onClose }: { taskId: string; onClose: () => void 
   const [timer, dispatch] = useReducer(timerReducer, focusMinutes, initialTimer)
   const [stepDraft, setStepDraft] = useState('')
   const ref = useRef<HTMLDivElement>(null)
-  const reduced = useReducedMotion()
+  const reduced = useMotionReduced()
   const now = useNow()
   const ringSize = useRingSize()
   const { phase } = timer

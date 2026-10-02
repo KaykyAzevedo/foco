@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
+import { useMotionReduced } from './reducedMotion'
 import clsx from 'clsx'
 import { springs } from './motion'
 
@@ -32,7 +33,7 @@ export function Checkbox({
   className,
 }: CheckboxProps) {
   const labelId = useId()
-  const reduced = useReducedMotion()
+  const reduced = useMotionReduced()
   const toggle = () => !disabled && onChange(!checked)
 
   return (

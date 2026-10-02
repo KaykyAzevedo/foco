@@ -1,6 +1,7 @@
 import { useId, useRef, type PointerEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { AnimatePresence, motion, useDragControls, useReducedMotion, type PanInfo } from 'motion/react'
+import { AnimatePresence, motion, useDragControls, type PanInfo } from 'motion/react'
+import { useMotionReduced } from './reducedMotion'
 import clsx from 'clsx'
 import { X } from 'lucide-react'
 import { Glass } from './Glass'
@@ -31,7 +32,7 @@ export function Sheet({ open, onClose, title, children, showClose, footer, class
   const titleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
   const controls = useDragControls()
-  const reduced = useReducedMotion()
+  const reduced = useMotionReduced()
   useFocusTrap(panelRef, open, { onEscape: onClose })
 
   const onDragEnd = (_: unknown, info: PanInfo) => {

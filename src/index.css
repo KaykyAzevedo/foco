@@ -45,3 +45,8 @@
     scroll-behavior: auto !important;
   }
 }
+:root[data-reduce-motion] *,
+:root[data-reduce-motion] *::before,
+:root[data-reduce-motion] *::after {
+  scroll-behavior: auto !important;
+}

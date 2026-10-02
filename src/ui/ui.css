@@ -184,7 +184,7 @@ html:not([data-theme='light']) .ui-btn[data-variant='ghost'] { color: var(--acce
   background: var(--overdue-soft);
 }
 .ui-btn:disabled { opacity: 0.42; cursor: not-allowed; }
-.ui-btn[data-loading='true'] { cursor: progress; }
+.ui-btn[data-loading='true'] { cursor: progress; opacity: 0.8; }
 .ui-btn .ui-spinner {
   width: 1.1em;
   height: 1.1em;
@@ -263,6 +263,69 @@ html:not([data-theme='light']) .ui-chip[data-tone='accent'] { --_c: var(--accent
   cursor: pointer;
 }
 .ui-chip-remove svg { width: 12px; height: 12px; }
+
+/* ---------- Segmented ---------- */
+.ui-segmented {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--text) 7%, var(--glass-bg-thin));
+  box-shadow:
+    inset 0 1px 2px rgb(0 0 0 / 0.06),
+    inset 0 0 0 1px color-mix(in srgb, var(--glass-border) 45%, transparent);
+  -webkit-backdrop-filter: blur(var(--blur-thin)) saturate(160%);
+  backdrop-filter: blur(var(--blur-thin)) saturate(160%);
+}
+.ui-segmented[data-full='true'] { display: grid; width: 100%; }
+.ui-segment {
+  position: relative;
+  height: 36px;
+  min-width: 0;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-2);
+  font: 600 var(--text-sm) / 1 var(--font-sans);
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--dur) var(--ease-out);
+}
+.ui-segmented[data-size='sm'] .ui-segment { height: 30px; padding: 0 10px; font-size: var(--text-xs); }
+.ui-segment[aria-checked='true'] { color: var(--text); }
+@media (hover: hover) {
+  .ui-segment[aria-checked='false']:hover { color: var(--text); }
+}
+.ui-segment:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 1px; }
+.ui-segment-indicator {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--segment-indicator);
+  box-shadow:
+    inset 0 1px 0 var(--glass-inner-shadow),
+    inset 0 0 0 1px color-mix(in srgb, var(--glass-border) 70%, transparent),
+    0 1px 2px rgb(0 0 0 / 0.08),
+    0 4px 12px -4px rgb(0 0 0 / 0.18);
+}
+.ui-segment-content {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.ui-segment-icon { display: inline-grid; }
+.ui-segment-icon svg { width: 1.15em; height: 1.15em; }
 
 /* ---------- Countdown ---------- */
 .ui-countdown {
@@ -681,6 +744,14 @@ html:not([data-theme='light']) .ui-xporb-gain { color: #ffc93d; text-shadow: 0 2
   }
   .ui-btn .ui-spinner { border-right-color: currentColor; opacity: 0.6; }
 }
+/* "Reduzir animações" nos Ajustes do app (UIProvider reducedMotion="always") */
+:root[data-reduce-motion] .ui-mesh-blob,
+:root[data-reduce-motion] .ui-countdown[data-urgency='urgent'] .ui-countdown-dot::after,
+:root[data-reduce-motion] .ui-btn .ui-spinner {
+  animation: none !important;
+}
+:root[data-reduce-motion] .ui-btn .ui-spinner { border-right-color: currentColor; opacity: 0.6; }
+:root[data-reduce-motion] .ui-mesh-dim { transition: none; }
 
 .ui-sr-only {
   position: absolute;
