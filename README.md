@@ -1,32 +1,25 @@
-# React + TypeScript + Vite
+# Foco
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+App de tarefas pensado para TDAH: em vez de um kanban cheio de opções, ele **decide o que fazer agora** e mostra uma coisa por vez.
 
-Currently, two official plugins are available:
+- **Agora** — a próxima tarefa, escolhida por prazo, urgência e pedidos da chefe
+- **Hoje** — ritual "Planejar meu dia" com no máximo 3 tarefas principais
+- **Caixa** — tudo o que foi capturado, agrupado por prazo
+- **Captura rápida** (`N` / `Ctrl+K`) em linguagem natural: `relatório amanhã 15h ! #chefe`
+- **Modo Foco** com timer em anel e micro-passos
+- **Gamificação**: XP, níveis, sequência com escudo, combo, missão diária e conquistas
+- Lembretes por notificação, PWA instalável e offline, backup em JSON
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Visual minimalista em liquid glass, com animações em spring, modo claro/escuro e suporte a "reduzir animações".
 
-## React Compiler
+## Rodando
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev        # http://localhost:5173
+npm test           # testes (Vitest)
+npm run build      # build de produção
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Stack: Vite, React 19, TypeScript, Tailwind CSS v4, Motion, Zustand, date-fns, vite-plugin-pwa.
+Os dados ficam só no navegador (localStorage). Produto e arquitetura em [`docs/`](docs/).
