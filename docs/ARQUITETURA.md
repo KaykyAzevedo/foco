@@ -29,6 +29,8 @@ src/
   ui/          # design system: tokens, Glass, Button, Sheet, Chip, Ring  → DONO: Lumen (design)
     tokens.css
   features/    # telas e fluxos montados com ui/ + store/                 → DONO: Faísca (telas)
+               #   exceção: features/focus/ e features/game/          → DONO: Lumen
+  public/, PWA (manifest, service worker)                             → DONO: Atlas
     now/  today/  inbox/  capture/  focus/  game/
   App.tsx      # shell + navegação (tab bar de vidro)                     → DONO: Faísca
 ```
